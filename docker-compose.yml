@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  cognee:
+    image: cognee/cognee:main
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persist graph, vector, and relational data across restarts.
+      - cognee_data:/app/.cognee_data
+      - cognee_system:/app/.cognee_system
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  cognee_data:
+    driver: local
+  cognee_system:
+    driver: local
