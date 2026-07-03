@@ -30,3 +30,7 @@ npm-debug.log*
 # Editor
 .vscode/
 .idea/
+
+# Local agent tooling (third-party skills, not part of the app)
+.agents/
+.claude/
