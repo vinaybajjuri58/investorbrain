@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { rememberText } from "@/lib/cognee";
 import { ingestUrl, buildCogneeDocument, SourceDocument } from "@/lib/ingest";
+import { INVESTING_GRAPH_MODEL, EXTRACTION_PROMPT } from "@/lib/extraction";
 
 export const runtime = "nodejs";
 
@@ -80,7 +81,16 @@ export async function POST(request: NextRequest) {
   const filename = `${slugify(doc.title)}.txt`;
 
   try {
-    await rememberText(content, filename, "investing", ["investing"]);
+    // Pass the domain-typed graph model and extraction prompt.
+    // No ontology_key — the custom graph_model + prompt fully control extraction.
+    await rememberText(
+      content,
+      filename,
+      "investing",
+      undefined,
+      INVESTING_GRAPH_MODEL || undefined,
+      EXTRACTION_PROMPT,
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: `Cognee ingestion failed: ${msg}` }, { status: 502 });

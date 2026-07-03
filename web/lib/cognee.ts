@@ -127,13 +127,22 @@ async function cogneeRequest<T>(
 /**
  * Ingest plain text into Cognee.
  * Sends the text as a file upload (multipart/form-data) to POST /api/v1/remember.
- * Field names: data (file array), datasetName, ontology_key, run_in_background.
+ * Field names: data (file array), datasetName, ontology_key, run_in_background,
+ *              graph_model, custom_prompt.
+ *
+ * @param graphModel  JSON-serialised graph model schema (same format as cognify).
+ *                    When provided, Cognee uses it to type-constrain extraction.
+ *                    Pass undefined or empty string to use the default KnowledgeGraph model.
+ * @param customPrompt  Replaces the default entity-extraction system prompt.
+ *                      Use to steer which node/edge types are extracted.
  */
 export async function rememberText(
   text: string,
   filename: string,
   datasetName: string,
-  ontologyKey?: string[]
+  ontologyKey?: string[],
+  graphModel?: string,
+  customPrompt?: string
 ): Promise<Record<string, unknown>> {
   const form = new FormData();
 
@@ -147,6 +156,14 @@ export async function rememberText(
     for (const key of ontologyKey) {
       form.append("ontology_key", key);
     }
+  }
+
+  // Domain-typed extraction overrides
+  if (graphModel) {
+    form.append("graph_model", graphModel);
+  }
+  if (customPrompt) {
+    form.append("custom_prompt", customPrompt);
   }
 
   // Always run in background so the LLM step doesn't block the HTTP response
