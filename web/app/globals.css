@@ -1,10 +1,43 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS — InvestorBrain
+   Palette: deep navy base · amber-gold accent
+   Signals: emerald=SUPPORTS · red=CONTRADICTS
+───────────────────────────────────────────── */
 @theme inline {
-  --color-background: #070b12;
-  --color-foreground: #e6edf3;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Surfaces */
+  --color-base:          #080c14;
+  --color-panel:         #0d1320;
+  --color-card:          #111928;
+  --color-raised:        #162035;
+
+  /* Borders */
+  --color-edge:          #1c2a3f;
+  --color-edge-strong:   #253548;
+
+  /* Text */
+  --color-ink:           #e4edf8;
+  --color-ink-dim:       #7b97b5;
+  --color-ink-faint:     #4a5c6e;
+
+  /* Accent — amber/gold */
+  --color-gold:          #f59e0b;
+  --color-gold-bright:   #fbbf24;
+
+  /* Semantic */
+  --color-positive:      #22c55e;
+  --color-negative:      #ef4444;
+  --color-warning:       #f59e0b;
+
+  /* Backward-compat aliases */
+  --color-background:    #080c14;
+  --color-foreground:    #e4edf8;
+
+  /* Fonts */
+  --font-sans:    var(--font-geist-sans);
+  --font-mono:    var(--font-geist-mono);
+  --font-brand:   var(--font-space-grotesk);
 }
 
 :root {
@@ -15,32 +48,63 @@ html,
 body {
   height: 100%;
   overflow: hidden;
-  background: #070b12;
-  color: #e6edf3;
+  background: #080c14;
+  color: #e4edf8;
 }
 
-/* Slim scrollbars */
+/* ── Focus ring: amber outline, keyboard-only ── */
+*:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Slim scrollbars ── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 3px;
+  background: #253548;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
+  background: #4a5c6e;
 }
 
-/* Thinking dots animation */
+/* ── Thinking dots ── */
 @keyframes thinking-dot {
   0%, 80%, 100% { opacity: 0.15; transform: scale(0.85); }
   40%           { opacity: 1;    transform: scale(1); }
 }
-
 .thinking-dot:nth-child(1) { animation: thinking-dot 1.2s infinite 0.0s; }
 .thinking-dot:nth-child(2) { animation: thinking-dot 1.2s infinite 0.2s; }
 .thinking-dot:nth-child(3) { animation: thinking-dot 1.2s infinite 0.4s; }
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #111928 25%,
+    #162035 50%,
+    #111928 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ── Status pulse ── */
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 0.2; transform: scale(1.6); }
+}
+.status-ring {
+  animation: status-pulse 1.6s ease-in-out infinite;
+}

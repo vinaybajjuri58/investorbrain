@@ -9,7 +9,7 @@ import {
 } from "react";
 import { fetchJson } from "@/app/hooks/useApi";
 
-// -------- types --------
+// ── Types ──
 interface QAItem {
   id: string;
   question: string;
@@ -23,7 +23,7 @@ interface AskResponse {
   results?: unknown;
 }
 
-// -------- preset chips --------
+// ── Preset chips ──
 const PRESETS = [
   "Bull case vs bear case — and who argues each side?",
   "Where do my creators contradict each other?",
@@ -32,7 +32,7 @@ const PRESETS = [
   "How did my view evolve over time?",
 ];
 
-// -------- simple markdown → JSX --------
+// ── Minimal markdown → JSX ──
 function renderMarkdown(text: string): React.ReactNode {
   const lines = text.split("\n");
   const nodes: React.ReactNode[] = [];
@@ -41,14 +41,12 @@ function renderMarkdown(text: string): React.ReactNode {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Blank line
     if (line.trim() === "") {
       nodes.push(<div key={`gap-${i}`} className="h-2" />);
       i++;
       continue;
     }
 
-    // Bullet list block
     if (/^[-*]\s/.test(line)) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && /^[-*]\s/.test(lines[i])) {
@@ -58,14 +56,13 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5 text-[#c9d1d9]">
+        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5 text-[#c4d3e8]">
           {items}
         </ul>
       );
       continue;
     }
 
-    // Numbered list block
     if (/^\d+\.\s/.test(line)) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
@@ -75,17 +72,16 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5 text-[#c9d1d9]">
+        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5 text-[#c4d3e8]">
           {items}
         </ol>
       );
       continue;
     }
 
-    // Heading
     if (/^###\s/.test(line)) {
       nodes.push(
-        <p key={`h3-${i}`} className="font-semibold text-[#e6edf3] mt-2 mb-0.5">
+        <p key={`h3-${i}`} className="font-semibold text-[#e4edf8] mt-2.5 mb-0.5 text-[12.5px]">
           {renderInline(line.replace(/^###\s/, ""))}
         </p>
       );
@@ -94,7 +90,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (/^##\s/.test(line)) {
       nodes.push(
-        <p key={`h2-${i}`} className="font-bold text-[#e6edf3] mt-2 mb-0.5">
+        <p key={`h2-${i}`} className="font-bold text-[#e4edf8] mt-2.5 mb-0.5 text-[13px]">
           {renderInline(line.replace(/^##\s/, ""))}
         </p>
       );
@@ -102,9 +98,8 @@ function renderMarkdown(text: string): React.ReactNode {
       continue;
     }
 
-    // Normal paragraph
     nodes.push(
-      <p key={`p-${i}`} className="text-[#c9d1d9] leading-relaxed">
+      <p key={`p-${i}`} className="text-[#c4d3e8] leading-relaxed">
         {renderInline(line)}
       </p>
     );
@@ -118,12 +113,19 @@ function renderInline(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
   return parts.map((part, idx) => {
     if (part.startsWith("**") && part.endsWith("**"))
-      return <strong key={idx} className="text-[#e6edf3]">{part.slice(2, -2)}</strong>;
+      return (
+        <strong key={idx} className="text-[#e4edf8] font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
     if (part.startsWith("*") && part.endsWith("*"))
       return <em key={idx}>{part.slice(1, -1)}</em>;
     if (part.startsWith("`") && part.endsWith("`"))
       return (
-        <code key={idx} className="bg-[#21262d] text-[#79c0ff] px-1 rounded text-[0.85em]">
+        <code
+          key={idx}
+          className="bg-[#162035] text-[#fbbf24] px-1.5 py-0.5 rounded text-[0.82em] font-mono"
+        >
           {part.slice(1, -1)}
         </code>
       );
@@ -131,12 +133,11 @@ function renderInline(text: string): React.ReactNode {
   });
 }
 
-// -------- component --------
+// ── Component ──
 export default function AskPanel() {
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<QAItem[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom when history grows
   useEffect(() => {
@@ -144,46 +145,40 @@ export default function AskPanel() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [history]);
 
-  const ask = useCallback(
-    async (q: string) => {
-      const trimmed = q.trim();
-      if (!trimmed) return;
+  const ask = useCallback(async (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
 
-      const id = `qa-${Date.now()}`;
-      const placeholder: QAItem = {
-        id,
-        question: trimmed,
-        answer: "",
-        loading: true,
-      };
-      setHistory((h) => [...h, placeholder]);
-      setQuestion("");
+    const id = `qa-${Date.now()}`;
+    setHistory((h) => [
+      ...h,
+      { id, question: trimmed, answer: "", loading: true },
+    ]);
+    setQuestion("");
 
-      try {
-        const data = await fetchJson<AskResponse>("/api/ask", {
-          method: "POST",
-          body: JSON.stringify({ question: trimmed }),
-        });
-        setHistory((h) =>
-          h.map((item) =>
-            item.id === id
-              ? { ...item, answer: data.answer ?? "", loading: false }
-              : item
-          )
-        );
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setHistory((h) =>
-          h.map((item) =>
-            item.id === id
-              ? { ...item, answer: "", loading: false, error: msg }
-              : item
-          )
-        );
-      }
-    },
-    []
-  );
+    try {
+      const data = await fetchJson<AskResponse>("/api/ask", {
+        method: "POST",
+        body: JSON.stringify({ question: trimmed }),
+      });
+      setHistory((h) =>
+        h.map((item) =>
+          item.id === id
+            ? { ...item, answer: data.answer ?? "", loading: false }
+            : item
+        )
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setHistory((h) =>
+        h.map((item) =>
+          item.id === id
+            ? { ...item, answer: "", loading: false, error: msg }
+            : item
+        )
+      );
+    }
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -196,61 +191,87 @@ export default function AskPanel() {
   );
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Preset chips */}
-      <div className="flex-none px-3 pt-3 pb-2 flex flex-wrap gap-1.5 border-b border-[#21262d]">
+    <div className="flex flex-col h-full bg-[#0d1320]">
+
+      {/* ── Preset chips ── */}
+      <div className="flex-none px-3 pt-3 pb-2.5 flex flex-wrap gap-1.5 border-b border-[#1c2a3f]">
         {PRESETS.map((p, i) => (
           <button
             key={i}
             onClick={() => ask(p)}
-            className="text-[10px] text-[#58a6ff] border border-[#1f3352] bg-[#0d1f35] hover:bg-[#132240] hover:border-[#58a6ff55] rounded-full px-2.5 py-1 leading-tight transition-colors text-left"
             title={p}
+            className="text-[10.5px] text-[#7b97b5] border border-[#253548] bg-[#111928] hover:bg-[#162035] hover:text-[#e4edf8] hover:border-[#f59e0b44] active:scale-95 rounded-full px-2.5 py-1 leading-tight transition-all duration-150 text-left cursor-pointer"
           >
-            {p.length > 40 ? p.slice(0, 38) + "…" : p}
+            {p.length > 38 ? p.slice(0, 36) + "…" : p}
           </button>
         ))}
       </div>
 
-      {/* Conversation list */}
+      {/* ── Conversation history ── */}
       <div
         ref={listRef}
         className="flex-1 overflow-y-auto px-3 py-3 space-y-4 min-h-0"
       >
+        {/* Empty state */}
         {history.length === 0 && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-[#484f58] text-sm text-center leading-relaxed">
-              Ask anything about your investing knowledge graph.
-              <br />
-              <span className="text-[11px]">Use a preset above or type below.</span>
-            </p>
+          <div className="h-full flex flex-col items-center justify-center text-center gap-3 px-4 py-8">
+            {/* Decorative icon */}
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden className="opacity-30">
+              <circle cx="16" cy="16" r="14" stroke="#f59e0b" strokeWidth="1.2"/>
+              <path d="M10 16h12M16 10v12" stroke="#f59e0b" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            <div className="space-y-1">
+              <p className="text-[#7b97b5] text-[12.5px] font-medium">
+                Ask anything about your investment knowledge
+              </p>
+              <p className="text-[#4a5c6e] text-[11px]">
+                Use a preset above or type a question below.
+              </p>
+            </div>
           </div>
         )}
 
+        {/* Q&A history */}
         {history.map((item) => (
           <div key={item.id} className="space-y-2">
-            {/* Question bubble */}
+            {/* Question — right-aligned */}
             <div className="flex justify-end">
-              <div className="max-w-[85%] bg-[#1f3352] border border-[#2d4a73] rounded-xl rounded-tr-sm px-3 py-2 text-sm text-[#cae3ff]">
+              <div
+                className="max-w-[85%] rounded-xl rounded-tr-[4px] px-3 py-2 text-[12.5px] text-[#e4edf8] leading-relaxed"
+                style={{
+                  background: "#162035",
+                  border: "1px solid #253548",
+                }}
+              >
                 {item.question}
               </div>
             </div>
 
-            {/* Answer bubble */}
+            {/* Answer — left-aligned */}
             <div className="flex justify-start">
-              <div className="max-w-[90%] bg-[#161b22] border border-[#30363d] rounded-xl rounded-tl-sm px-3 py-2.5 text-sm">
+              <div
+                className="max-w-[90%] rounded-xl rounded-tl-[4px] px-3 py-2.5 text-[12.5px]"
+                style={{
+                  background: "#111928",
+                  border: "1px solid #1c2a3f",
+                }}
+              >
                 {item.loading ? (
-                  <div className="flex items-center gap-1.5 py-1">
+                  /* Thinking dots */
+                  <div className="flex items-center gap-1.5 py-1.5">
                     {[0, 1, 2].map((n) => (
                       <span
                         key={n}
-                        className="thinking-dot w-1.5 h-1.5 rounded-full bg-[#58a6ff] inline-block"
+                        className="thinking-dot w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
                       />
                     ))}
                   </div>
                 ) : item.error ? (
-                  <p className="text-red-400 text-[12px]">{item.error}</p>
+                  <p className="text-[#f87171] text-[11.5px] leading-relaxed">
+                    {item.error}
+                  </p>
                 ) : (
-                  <div className="text-[13px] leading-relaxed">
+                  <div className="leading-relaxed">
                     {renderMarkdown(item.answer)}
                   </div>
                 )}
@@ -260,36 +281,56 @@ export default function AskPanel() {
         ))}
       </div>
 
-      {/* Input area */}
-      <div className="flex-none p-3 border-t border-[#21262d] bg-[#0d1117]">
+      {/* ── Input area ── */}
+      <div
+        className="flex-none p-3 border-t border-[#1c2a3f]"
+        style={{ background: "#0d1320" }}
+      >
         <div className="flex gap-2 items-end">
           <textarea
-            ref={textareaRef}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about your knowledge graph…"
             rows={2}
-            className="flex-1 bg-[#161b22] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-[#e6edf3] placeholder-[#484f58] resize-none focus:outline-none focus:border-[#58a6ff66] transition-colors"
+            aria-label="Question input"
+            className="flex-1 rounded-lg px-3 py-2 text-[12.5px] text-[#e4edf8] placeholder-[#4a5c6e] resize-none focus:outline-none transition-colors duration-150"
+            style={{
+              background:  "#111928",
+              border:      "1px solid #253548",
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#f59e0b66")}
+            onBlur={(e)  => (e.currentTarget.style.borderColor = "#253548")}
           />
+
+          {/* Send button */}
           <button
             onClick={() => ask(question)}
             disabled={!question.trim()}
-            className="flex-none flex items-center gap-1.5 bg-[#1f6feb] hover:bg-[#388bfd] disabled:opacity-35 disabled:cursor-not-allowed text-white rounded-lg px-3 py-2 text-xs font-medium transition-colors h-[58px]"
+            aria-label="Submit question"
+            className="flex-none flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11.5px] font-semibold transition-all duration-150 h-[58px] cursor-pointer active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed"
+            style={{
+              background: question.trim() ? "#f59e0b" : "#162035",
+              color:      question.trim() ? "#080c14" : "#4a5c6e",
+              border:     "1px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (question.trim())
+                e.currentTarget.style.background = "#fbbf24";
+            }}
+            onMouseLeave={(e) => {
+              if (question.trim())
+                e.currentTarget.style.background = "#f59e0b";
+            }}
           >
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path
-                d="M1 6.5h11M7.5 2L12 6.5 7.5 11"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
+              <path d="M1 6.5h11M7.5 2L12 6.5 7.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             Ask
           </button>
         </div>
-        <p className="text-[10px] text-[#484f58] mt-1.5 pl-0.5">
+
+        <p className="text-[10px] text-[#4a5c6e] mt-1.5 pl-0.5">
           Cmd/Ctrl + Enter to submit
         </p>
       </div>

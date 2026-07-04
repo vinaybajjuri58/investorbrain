@@ -42,7 +42,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("ask");
   const [refreshTick, setRefreshTick] = useState(0);
 
-  // Stable fetchGraph — won't change between renders
   const fetchGraph = useCallback(async () => {
     try {
       const data = await fetchJson<GraphData>("/api/graph");
@@ -52,16 +51,13 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Initial fetch + manual refresh
   useEffect(() => {
     fetchGraph();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchGraph, refreshTick]);
 
-  // Poll /api/status every 5 s
   useEffect(() => {
     let cancelled = false;
-
     async function pollStatus() {
       try {
         const data = await fetchJson<unknown>("/api/status");
@@ -70,7 +66,6 @@ export default function Dashboard() {
         // ignore
       }
     }
-
     pollStatus();
     const id = setInterval(pollStatus, 5000);
     return () => {
@@ -79,7 +74,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Poll /api/graph every 8 s while processing
   const processingRef = useRef(status);
   processingRef.current = status;
 
@@ -92,7 +86,6 @@ export default function Dashboard() {
   const handleRefresh = useCallback(() => setRefreshTick((t) => t + 1), []);
 
   const handleSourceAdded = useCallback(() => {
-    // Flip to processing so graph polling starts
     setStatus("processing");
   }, []);
 
@@ -105,61 +98,65 @@ export default function Dashboard() {
   const edgeCount = graphData.links.length;
 
   return (
-    <div className="flex flex-col h-full bg-[#070b12] text-[#e6edf3] select-none">
-      {/* ---- Top bar ---- */}
-      <header className="flex-none h-11 flex items-center px-4 gap-4 border-b border-[#1c2333]">
-        {/* Logo */}
+    <div className="flex flex-col h-full bg-[#080c14] text-[#e4edf8] select-none">
+
+      {/* ── Top bar ── */}
+      <header className="flex-none h-12 flex items-center px-4 gap-3 border-b border-[#1c2a3f] bg-[#0d1320]">
+
+        {/* Logo mark + brand name */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            aria-hidden
-          >
-            <circle cx="11" cy="11" r="4" fill="#58a6ff" opacity="0.9" />
-            <circle cx="3.5" cy="3.5" r="2.5" fill="#a855f7" opacity="0.85" />
-            <circle cx="18.5" cy="3.5" r="2.5" fill="#22c55e" opacity="0.85" />
-            <circle cx="3.5" cy="18.5" r="2.5" fill="#f97316" opacity="0.85" />
-            <circle cx="18.5" cy="18.5" r="2.5" fill="#ef4444" opacity="0.85" />
-            <line x1="8" y1="8" x2="5.5" y2="5.5" stroke="#58a6ff" strokeWidth="1" opacity="0.45" />
-            <line x1="14" y1="8" x2="16.5" y2="5.5" stroke="#58a6ff" strokeWidth="1" opacity="0.45" />
-            <line x1="8" y1="14" x2="5.5" y2="16.5" stroke="#58a6ff" strokeWidth="1" opacity="0.45" />
-            <line x1="14" y1="14" x2="16.5" y2="16.5" stroke="#58a6ff" strokeWidth="1" opacity="0.45" />
+          {/* Knowledge-graph icon: amber centre + colour-coded satellite nodes */}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+            {/* Edges */}
+            <line x1="10" y1="10" x2="4"  y2="4"  stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
+            <line x1="10" y1="10" x2="16" y2="4"  stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
+            <line x1="10" y1="10" x2="4"  y2="16" stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
+            <line x1="10" y1="10" x2="16" y2="16" stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
+            {/* Satellite nodes — match graph type colours */}
+            <circle cx="4"  cy="4"  r="2"   fill="#22c55e"/>
+            <circle cx="16" cy="4"  r="2"   fill="#4f9cf9"/>
+            <circle cx="4"  cy="16" r="2"   fill="#ef4444"/>
+            <circle cx="16" cy="16" r="2"   fill="#a78bfa"/>
+            {/* Centre node — amber brand accent */}
+            <circle cx="10" cy="10" r="3.5" fill="#f59e0b"/>
+            {/* Specular highlight */}
+            <circle cx="8.7" cy="8.7" r="1.1" fill="rgba(255,255,255,0.26)"/>
           </svg>
+
           <span
-            className="text-sm font-bold tracking-tight"
-            style={{
-              background: "linear-gradient(90deg, #58a6ff 0%, #a78bfa 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
+            className="text-[13.5px] font-semibold tracking-[-0.01em] text-[#e4edf8]"
+            style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
           >
             InvestorBrain
           </span>
         </div>
 
-        <span className="hidden sm:block text-[11px] text-[#6e7681] flex-shrink-0">
-          your bias-aware investing memory
+        {/* Vertical rule */}
+        <div className="hidden sm:block w-px h-4 bg-[#1c2a3f] flex-shrink-0" />
+
+        {/* Tagline */}
+        <span className="hidden sm:block text-[10.5px] text-[#4a5c6e] flex-shrink-0 font-mono tracking-wide">
+          bias-aware investing memory
         </span>
 
         <div className="flex-1" />
 
-        {/* Stats */}
+        {/* Graph stats */}
         {nodeCount > 0 && (
-          <span className="hidden sm:block text-[11px] font-mono text-[#6e7681] flex-shrink-0">
-            {nodeCount} nodes · {edgeCount} edges
+          <span className="hidden sm:block text-[11px] font-mono text-[#4a5c6e] flex-shrink-0 tabular-nums">
+            {nodeCount}&thinsp;nodes · {edgeCount}&thinsp;edges
           </span>
         )}
 
-        {/* Status dot */}
+        {/* Status indicator */}
         <StatusDot status={status} />
       </header>
 
-      {/* ---- Main content ---- */}
+      {/* ── Main layout ── */}
       <div className="flex flex-1 min-h-0">
-        {/* Graph — left ~65% */}
-        <div className="flex-[65] min-w-0 border-r border-[#1c2333]">
+
+        {/* Graph canvas — left ~65% */}
+        <div className="flex-[65] min-w-0 border-r border-[#1c2a3f]">
           <GraphCanvas
             graphData={graphData}
             isProcessing={status === "processing"}
@@ -167,19 +164,22 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Control panel — right ~35% (min 340px) */}
-        <div className="flex-[35] min-w-[320px] max-w-[420px] flex flex-col bg-[#0d1117]">
+        {/* Control panel — right ~35% */}
+        <div className="flex-[35] min-w-[320px] max-w-[420px] flex flex-col bg-[#0d1320]">
+
           {/* Tab strip */}
-          <div className="flex-none flex border-b border-[#1c2333]">
+          <div className="flex-none flex border-b border-[#1c2a3f]">
             {(["ask", "add", "memory"] as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-[11px] font-semibold uppercase tracking-wider transition-all ${
+                style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
+                className={[
+                  "flex-1 py-3 text-[11.5px] font-medium tracking-wide transition-all duration-150 cursor-pointer",
                   activeTab === tab
-                    ? "text-[#58a6ff] border-b-2 border-[#58a6ff] -mb-px"
-                    : "text-[#6e7681] hover:text-[#8b949e] border-b-2 border-transparent"
-                }`}
+                    ? "text-[#f59e0b] border-b-2 border-[#f59e0b] -mb-px"
+                    : "text-[#4a5c6e] hover:text-[#7b97b5] border-b-2 border-transparent",
+                ].join(" ")}
               >
                 {TAB_LABELS[tab]}
               </button>
@@ -188,13 +188,9 @@ export default function Dashboard() {
 
           {/* Tab content */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            {activeTab === "ask" && <AskPanel />}
-            {activeTab === "add" && (
-              <SourcePanel onSourceAdded={handleSourceAdded} />
-            )}
-            {activeTab === "memory" && (
-              <MemoryPanel onForgetAll={handleForgetAll} />
-            )}
+            {activeTab === "ask"    && <AskPanel />}
+            {activeTab === "add"    && <SourcePanel onSourceAdded={handleSourceAdded} />}
+            {activeTab === "memory" && <MemoryPanel onForgetAll={handleForgetAll} />}
           </div>
         </div>
       </div>
