@@ -9,49 +9,65 @@ export default async function SignInPage() {
   // Already authenticated → go straight to the dashboard
   const session = await auth();
   if (session?.user) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#080c14] px-4">
+    <main
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background:
+          "radial-gradient(ellipse 90% 70% at 50% 0%, #2447f0 0%, #1d3be0 45%, #12279d 100%)",
+      }}
+    >
       <div className="w-full max-w-sm">
 
         {/* Card */}
-        <div className="bg-[#111928] border border-[#1c2a3f] rounded-2xl p-8 shadow-2xl">
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: "rgba(0,0,0,0.85)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.45)",
+          }}
+        >
 
           {/* Logo + brand */}
           <div className="flex flex-col items-center gap-4 mb-8">
-            {/* Knowledge-graph icon — matches Dashboard header */}
-            <div className="p-3 rounded-xl bg-[#0d1320] border border-[#1c2a3f]">
+            {/* Knowledge-graph icon — matches landing nav */}
+            <div
+              className="p-3 rounded-xl"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
               <svg width="32" height="32" viewBox="0 0 20 20" fill="none" aria-hidden>
-                <line x1="10" y1="10" x2="4"  y2="4"  stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
-                <line x1="10" y1="10" x2="16" y2="4"  stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
-                <line x1="10" y1="10" x2="4"  y2="16" stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
-                <line x1="10" y1="10" x2="16" y2="16" stroke="#f59e0b" strokeWidth="0.9" strokeOpacity="0.5"/>
+                <line x1="10" y1="10" x2="4"  y2="4"  stroke="white" strokeWidth="0.9" strokeOpacity="0.5"/>
+                <line x1="10" y1="10" x2="16" y2="4"  stroke="white" strokeWidth="0.9" strokeOpacity="0.5"/>
+                <line x1="10" y1="10" x2="4"  y2="16" stroke="white" strokeWidth="0.9" strokeOpacity="0.5"/>
+                <line x1="10" y1="10" x2="16" y2="16" stroke="white" strokeWidth="0.9" strokeOpacity="0.5"/>
                 <circle cx="4"  cy="4"  r="2"   fill="#22c55e"/>
                 <circle cx="16" cy="4"  r="2"   fill="#4f9cf9"/>
                 <circle cx="4"  cy="16" r="2"   fill="#ef4444"/>
                 <circle cx="16" cy="16" r="2"   fill="#a78bfa"/>
-                <circle cx="10" cy="10" r="3.5" fill="#f59e0b"/>
-                <circle cx="8.7" cy="8.7" r="1.1" fill="rgba(255,255,255,0.26)"/>
+                <circle cx="10" cy="10" r="3.5" fill="white"/>
+                <circle cx="8.7" cy="8.7" r="1.1" fill="rgba(0,0,0,0.2)"/>
               </svg>
             </div>
 
             <div className="text-center">
               <h1
-                className="text-[22px] font-semibold tracking-[-0.02em] text-[#e4edf8]"
+                className="text-[22px] font-semibold tracking-[-0.02em] text-white"
                 style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
               >
                 InvestorBrain
               </h1>
-              <p className="mt-1 text-[12px] text-[#4a5c6e] font-mono tracking-wide">
-                your bias-aware investing memory
+              <p className="mt-1 text-[11px] text-white/45 font-mono tracking-[0.14em] uppercase">
+                bias-aware investing memory
               </p>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-[#1c2a3f] mb-6" />
+          <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.1)" }} />
 
           {/* Sign-in form — server action triggers Google OAuth */}
           <form
@@ -69,7 +85,7 @@ export default async function SignInPage() {
                 "text-[#1f1f1f] text-[14px] font-medium",
                 "border border-[#dadce0]",
                 "transition-colors duration-150 cursor-pointer",
-                "focus-visible:outline-2 focus-visible:outline-[#f59e0b] focus-visible:outline-offset-2",
+                "focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2",
                 "shadow-sm",
               ].join(" ")}
             >
@@ -96,7 +112,7 @@ export default async function SignInPage() {
             </button>
           </form>
 
-          <p className="mt-5 text-center text-[11px] text-[#4a5c6e] leading-relaxed">
+          <p className="mt-5 text-center text-[11px] text-white/40 leading-relaxed">
             Your knowledge graph is private and stored on your own server.
             <br />
             No data is shared between accounts.

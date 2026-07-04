@@ -11,13 +11,11 @@ export { auth as proxy } from "@/auth";
 export const config = {
   matcher: [
     /*
-     * Match all paths EXCEPT:
-     *   /signin              — the public sign-in page
-     *   /api/*               — API routes check their own session (401 JSON)
-     *   /_next/static        — Next.js build assets
-     *   /_next/image         — image optimisation
-     *   /favicon.ico         — static asset
+     * Protect ONLY the dashboard subtree.
+     * The root "/" is now a public landing page and must remain open.
+     * API routes, static assets, and /signin are all implicitly excluded.
      */
-    "/((?!signin|api|_next/static|_next/image|favicon\\.ico).*)",
+    "/dashboard/:path*",
+    "/dashboard",
   ],
 };
