@@ -309,6 +309,7 @@ export default function Dashboard({ user }: DashboardProps) {
             >
               {(["ask", "add", "memory"] as Tab[]).map((tab) => (
                 <button
+                  type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   style={{

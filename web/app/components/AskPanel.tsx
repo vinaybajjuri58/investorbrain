@@ -37,7 +37,6 @@ function renderMarkdown(text: string): React.ReactNode {
   const lines = text.split("\n");
   const nodes: React.ReactNode[] = [];
   let i = 0;
-  let listItemCounter = 0;
 
   while (i < lines.length) {
     const line = lines[i];
@@ -50,11 +49,10 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^[-*]\s/.test(line)) {
       const items: React.ReactNode[] = [];
-      const startIdx = i;
       while (i < lines.length && /^[-*]\s/.test(lines[i])) {
         const content = lines[i].replace(/^[-*]\s/, "");
         items.push(
-          <li key={`li-ul-${startIdx}-${listItemCounter++}`}>{renderInline(content)}</li>
+          <li key={`li-ul-${content.replace(/\s/g, "-").slice(0, 20)}`}>{renderInline(content)}</li>
         );
         i++;
       }
@@ -68,11 +66,10 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^\d+\.\s/.test(line)) {
       const items: React.ReactNode[] = [];
-      const startIdx = i;
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
         const content = lines[i].replace(/^\d+\.\s/, "");
         items.push(
-          <li key={`li-ol-${startIdx}-${listItemCounter++}`}>{renderInline(content)}</li>
+          <li key={`li-ol-${content.replace(/\s/g, "-").slice(0, 20)}`}>{renderInline(content)}</li>
         );
         i++;
       }

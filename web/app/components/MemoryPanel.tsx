@@ -137,6 +137,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
         </div>
 
         <button
+          type="button"
           onClick={handleImprove}
           disabled={improveStatus === "loading"}
           aria-label="Run memory improvement"
