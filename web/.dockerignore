@@ -1,0 +1,41 @@
+# =============================================================================
+# web/.dockerignore — files excluded from the Docker build context
+# =============================================================================
+
+# Dependencies — always rebuilt inside Docker
+node_modules
+.pnpm-store
+
+# Next.js build output — rebuilt inside Docker
+.next
+out
+
+# Environment files — NEVER bake secrets into images
+.env
+.env.*
+!.env.example
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Editor / OS artefacts
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+Thumbs.db
+
+# Test and coverage output
+coverage
+.nyc_output
+
+# Docs (not needed at runtime)
+README.md
+AGENTS.md
+CLAUDE.md
+
+# TypeScript incremental build cache
+*.tsbuildinfo

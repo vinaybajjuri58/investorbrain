@@ -1,0 +1,122 @@
+# =============================================================================
+# InvestorBrain — Production Docker Compose
+#
+# Prerequisites on the VPS (from the repo root):
+#   1. cp .env.example .env       # then fill in LLM_API_KEY, DOMAIN, etc.
+#      The VPS .env MUST be the same shape as .env.example.
+#      Add: DOMAIN=yourdomain.com  (used by Caddy for auto-TLS)
+#
+#   2. Run from the repo root:
+#      docker compose -f deploy/docker-compose.prod.yml up -d --build
+#
+# Network topology:
+#   Caddy (80/443) → web:3000 → cognee:8000
+#   cognee is NEVER exposed publicly — only reachable on the internal network.
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # cognee — self-hosted knowledge-graph / RAG engine
+  # No published ports: only reachable from web at http://cognee:8000
+  # ---------------------------------------------------------------------------
+  cognee:
+    image: cognee/cognee:main
+    env_file:
+      # Repo-root .env — same shape as .env.example.
+      # Contains LLM_API_KEY, EMBEDDING_*, DB_*, GRAPH_*, VECTOR_*, etc.
+      - ../.env
+    volumes:
+      # Persist graph, vector, and relational data across restarts.
+      # These volume names and container paths match the dev docker-compose.yml.
+      - cognee_data:/app/.cognee_data
+      - cognee_system:/app/.cognee_system
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # web — Next.js application
+  # Built from ../web/Dockerfile; no published ports (Caddy is the ingress).
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    environment:
+      # Override the COGNEE_URL from ../.env so web always reaches the
+      # internal service, not localhost:8000.
+      # (docker-compose environment: takes precedence over env_file:)
+      - COGNEE_URL=http://cognee:8000
+      - NODE_ENV=production
+    env_file:
+      # Pulls in any additional vars (e.g. NEXTAUTH_SECRET) without
+      # duplicating them.  COGNEE_URL from .env is overridden above.
+      - ../.env
+    depends_on:
+      cognee:
+        condition: service_healthy
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      # wget is available on Alpine; checks that Next.js is responding
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # caddy — HTTPS reverse proxy with automatic TLS (Let's Encrypt / ZeroSSL)
+  # Reads DOMAIN env var; set it in .env or export before running compose.
+  # ---------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"       # HTTP (ACME HTTP-01 challenges + redirect to HTTPS)
+      - "443:443"     # HTTPS
+      - "443:443/udp" # HTTP/3 (QUIC)
+    environment:
+      # DOMAIN is read from the host environment or the .env file in the
+      # repo root (docker compose auto-loads .env from the project root).
+      - DOMAIN=${DOMAIN}
+    volumes:
+      # Caddyfile is in the same directory as this compose file
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Persist TLS certificates and ACME account data across restarts
+      - caddy_data:/data
+      # Persist Caddy's config cache
+      - caddy_config:/config
+    networks:
+      - internal
+    restart: unless-stopped
+
+# ---------------------------------------------------------------------------
+# Networks — all services communicate on an isolated bridge network
+# ---------------------------------------------------------------------------
+networks:
+  internal:
+    driver: bridge
+
+# ---------------------------------------------------------------------------
+# Volumes
+# ---------------------------------------------------------------------------
+volumes:
+  # Cognee persistent data (matches dev docker-compose.yml names)
+  cognee_data:
+    driver: local
+  cognee_system:
+    driver: local
+  # Caddy TLS certificates (Let's Encrypt) — must survive container restarts
+  caddy_data:
+    driver: local
+  # Caddy runtime config cache
+  caddy_config:
+    driver: local
