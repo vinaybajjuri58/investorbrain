@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { auth } from "@/auth";
+import { datasetForUser } from "@/lib/dataset";
 import { forget } from "@/lib/cognee";
 
 export const runtime = "nodejs";
@@ -9,6 +11,12 @@ interface ForgetBody {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: ForgetBody;
   try {
     body = (await request.json()) as ForgetBody;
@@ -25,11 +33,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const dataset = datasetForUser(email);
+
   try {
     if (dataId) {
-      await forget({ dataId, dataset: "investing" });
+      await forget({ dataId, dataset });
     } else {
-      await forget({ dataset: "investing", memoryOnly: true });
+      await forget({ dataset, memoryOnly: true });
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

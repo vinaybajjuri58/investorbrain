@@ -1,3 +1,5 @@
+import { auth } from "@/auth";
+import { datasetForUser } from "@/lib/dataset";
 import { listDatasets, getGraph } from "@/lib/cognee";
 
 export const runtime = "nodejs";
@@ -48,6 +50,14 @@ function extractStance(
 }
 
 export async function GET() {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const datasetName = datasetForUser(email);
+
   let datasets: Awaited<ReturnType<typeof listDatasets>>;
   try {
     datasets = await listDatasets();
@@ -56,8 +66,9 @@ export async function GET() {
     return Response.json({ error: `Could not list datasets: ${msg}` }, { status: 502 });
   }
 
-  const dataset = datasets.find((d) => d.name === "investing");
+  const dataset = datasets.find((d) => d.name === datasetName);
   if (!dataset) {
+    // New user with no dataset yet — return empty graph, not an error
     return Response.json({ nodes: [], links: [] });
   }
 

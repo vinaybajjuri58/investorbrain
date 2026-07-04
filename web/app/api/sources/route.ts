@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { auth } from "@/auth";
+import { datasetForUser } from "@/lib/dataset";
 import { rememberText } from "@/lib/cognee";
 import { ingestUrl, buildCogneeDocument, SourceDocument } from "@/lib/ingest";
 import { INVESTING_GRAPH_MODEL, EXTRACTION_PROMPT } from "@/lib/extraction";
@@ -22,6 +24,12 @@ function slugify(s: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: SourceBody;
   try {
     body = (await request.json()) as SourceBody;
@@ -79,6 +87,7 @@ export async function POST(request: NextRequest) {
 
   const content = buildCogneeDocument(doc);
   const filename = `${slugify(doc.title)}.txt`;
+  const dataset = datasetForUser(email);
 
   try {
     // Pass the domain-typed graph model and extraction prompt.
@@ -86,7 +95,7 @@ export async function POST(request: NextRequest) {
     await rememberText(
       content,
       filename,
-      "investing",
+      dataset,
       undefined,
       INVESTING_GRAPH_MODEL || undefined,
       EXTRACTION_PROMPT,

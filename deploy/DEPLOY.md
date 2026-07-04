@@ -79,6 +79,10 @@ Required values to set in `.env`:
 | `LLM_API_KEY` | Your OpenAI API key (`sk-...`) |
 | `FASTAPI_USERS_JWT_SECRET` | A long random string (`openssl rand -hex 32`) |
 | `DOMAIN` | Your domain name, e.g. `investorbrain.example.com` |
+| `AUTH_SECRET` | Random secret for Auth.js (`openssl rand -base64 32`) |
+| `AUTH_GOOGLE_ID` | Google OAuth Client ID (see setup below) |
+| `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret |
+| `OWNER_EMAIL` | Your Google account email — maps to the "investing" dataset |
 
 All other variables can stay as-is from `.env.example` for a standard deployment.
 
@@ -185,3 +189,35 @@ docker compose -f deploy/docker-compose.prod.yml logs -f caddy
 
 Caddy renews certificates automatically.  No cron job or manual step required.
 Certificates are stored in the `caddy_data` Docker volume and survive restarts.
+
+---
+
+## Google OAuth setup
+
+InvestorBrain uses Google as the sole sign-in provider. Each user receives an
+isolated Cognee dataset. The owner's email (set in `OWNER_EMAIL`) maps to the
+pre-populated `investing` dataset.
+
+### Steps
+
+1. Open [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials).
+2. Click **Create Credentials → OAuth 2.0 Client ID**.
+3. Application type: **Web application**. Give it a name (e.g. `InvestorBrain`).
+4. Under **Authorised redirect URIs**, add:
+   ```
+   https://DOMAIN/api/auth/callback/google
+   ```
+   Replace `DOMAIN` with your actual domain (e.g. `investorbrain.example.com`).
+   For local development, also add `http://localhost:3000/api/auth/callback/google`.
+5. Click **Create**. Copy the **Client ID** and **Client Secret**.
+6. In your server `.env`, set:
+   ```
+   AUTH_GOOGLE_ID=<Client ID>
+   AUTH_GOOGLE_SECRET=<Client Secret>
+   AUTH_SECRET=<openssl rand -base64 32>
+   OWNER_EMAIL=<your Google account email>
+   ```
+7. Redeploy: `docker compose -f deploy/docker-compose.prod.yml up -d --build web`
+
+The `AUTH_URL` is automatically set to `https://${DOMAIN}` by the compose file.
+You do not need to set it manually in `.env`.

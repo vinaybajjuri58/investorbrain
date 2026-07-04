@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { auth } from "@/auth";
+import { datasetForUser } from "@/lib/dataset";
 import { recall, SearchType, RecallResult } from "@/lib/cognee";
 
 export const runtime = "nodejs";
@@ -9,6 +11,12 @@ interface AskBody {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: AskBody;
   try {
     body = (await request.json()) as AskBody;
@@ -22,10 +30,12 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "'question' is required" }, { status: 400 });
   }
 
+  const dataset = datasetForUser(email);
+
   let results: RecallResult[];
   try {
     results = await recall(question.trim(), {
-      datasets: ["investing"],
+      datasets: [dataset],
       searchType: searchType ?? "GRAPH_COMPLETION",
     });
   } catch (err: unknown) {

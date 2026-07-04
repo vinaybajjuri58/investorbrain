@@ -2,7 +2,7 @@
 
 **Bias-aware, contradiction-aware investing memory.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/) [![Cognee](https://img.shields.io/badge/Cognee-self--hosted-6c47ff)](https://github.com/topoteretes/cognee) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/) [![Cognee](https://img.shields.io/badge/Cognee-self--hosted-6c47ff)](https://github.com/topoteretes/cognee) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Auth.js](https://img.shields.io/badge/Auth.js-v5-7c3aed)](https://authjs.dev/)
 
 ---
 
@@ -14,7 +14,7 @@ Retail investors consume investing content across dozens of fragmented sources �
 
 ## What it does
 
-InvestorBrain turns every piece of investing content you consume into a node in a typed knowledge graph. Each source is parsed, its entities extracted by a domain-specific prompt, and the result written into a self-hosted Cognee memory engine — KuzuDB graph store, LanceDB vectors, SQLite metadata — running on your own server. The graph is then queryable in plain language, with citations, contradictions surfaced, and creator bias accounted for.
+InvestorBrain turns every piece of investing content you consume into a node in a typed knowledge graph. Sign in with Google to access your private graph. Each Google account gets its own isolated Cognee dataset — your memory stays yours. Each source is parsed, its entities extracted by a domain-specific prompt, and the result written into a self-hosted Cognee memory engine — KuzuDB graph store, LanceDB vectors, SQLite metadata — running on your own server. The graph is then queryable in plain language, with citations, contradictions surfaced, and creator bias accounted for.
 
 ### Memory lifecycle
 
@@ -64,7 +64,7 @@ graph LR
 
 ## Architecture
 
-Every line of application code is TypeScript. Cognee is consumed purely as a self-hosted open-source service over its REST API — there is no Python in this repository. The full stack runs comfortably on an 8 GB VPS.
+Every line of application code is TypeScript. Cognee is consumed purely as a self-hosted open-source service over its REST API — there is no Python in this repository. The full stack runs comfortably on an 8 GB VPS. Authentication uses Auth.js v5 (next-auth@beta) with Google as the sole provider; each user's knowledge graph is stored in a private Cognee dataset isolated by a sha256-derived name.
 
 ```mermaid
 flowchart LR
@@ -91,27 +91,36 @@ flowchart LR
 
 ## Quickstart (local)
 
-**Prerequisites:** Docker, Node.js 20+, pnpm, OpenAI API key.
+**Prerequisites:** Docker, Node.js 20+, pnpm, OpenAI API key, Google OAuth credentials.
 
 ```bash
 # 1. Clone
 git clone https://github.com/vinaybajjuri58/investorbrain
 cd investorbrain
 
-# 2. Configure
+# 2. Configure Cognee
 cp .env.example .env
 # Open .env and set LLM_API_KEY to your OpenAI key (sk-...)
 
-# 3. Start Cognee
+# 3. Configure web auth
+cp web/.env.local.example web/.env.local
+# Open web/.env.local and set:
+#   AUTH_SECRET   — openssl rand -base64 32
+#   AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET — from console.cloud.google.com
+#   OWNER_EMAIL   — your Google account email (maps to the "investing" dataset)
+
+# 4. Start Cognee
 docker compose up -d
 # Healthy when: curl http://localhost:8000/health returns {"status":"ok"}
 
-# 4. Start the web app
+# 5. Start the web app
 cd web && pnpm install && pnpm dev
 
-# 5. Open http://localhost:3000
-# Paste a YouTube URL and watch the graph bloom.
+# 6. Open http://localhost:3000
+# Sign in with Google, then paste a YouTube URL and watch the graph bloom.
 ```
+
+**Google OAuth setup (local):** In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an OAuth 2.0 Client ID (Web application) with redirect URI `http://localhost:3000/api/auth/callback/google`. See `deploy/DEPLOY.md` for the production setup.
 
 Cognee's graph-building pipeline (`cognify`) runs in the background after each ingest; the UI polls `/api/status` and shows progress. For demo or presentation use, pre-ingest your corpus before the session — querying is instant, building takes minutes per source.
 

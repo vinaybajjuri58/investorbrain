@@ -1,11 +1,18 @@
 import { NextRequest } from "next/server";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { auth } from "@/auth";
 import { listOntologies, uploadOntology } from "@/lib/cognee";
 
 export const runtime = "nodejs";
 
 export async function POST(_request: NextRequest) {
+  // Require authentication — ontology setup is an admin operation
+  const session = await auth();
+  if (!session?.user?.email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   // Read the OWL file from disk relative to the project root
   let owlContent: string;
   try {

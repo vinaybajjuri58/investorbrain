@@ -55,9 +55,18 @@ services:
       # (docker-compose environment: takes precedence over env_file:)
       - COGNEE_URL=http://cognee:8000
       - NODE_ENV=production
+      # Auth.js — pass through from the root .env (which holds real secrets).
+      # Generate AUTH_SECRET with: openssl rand -base64 32
+      # AUTH_URL must match the public HTTPS domain so OAuth redirects work.
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - AUTH_URL=https://${DOMAIN}
+      # Email that maps to the existing "investing" dataset
+      - OWNER_EMAIL=${OWNER_EMAIL}
     env_file:
-      # Pulls in any additional vars (e.g. NEXTAUTH_SECRET) without
-      # duplicating them.  COGNEE_URL from .env is overridden above.
+      # Pulls in any additional vars without duplicating them.
+      # Variables set in environment: above take precedence over env_file:.
       - ../.env
     depends_on:
       cognee:
