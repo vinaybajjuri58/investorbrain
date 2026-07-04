@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { fetchJson } from "@/app/hooks/useApi";
 
 // ── Helpers ──
@@ -148,20 +148,20 @@ export default function SourcePanel({ onSourceAdded }: Props) {
 
   const yt = url.trim() ? isYouTube(url.trim()) : null;
 
-  const inputStyle = {
+  const inputStyle = useMemo(() => ({
     background: "#0f0f12",
     border: "1px solid #1a1a1f",
     color: "#ffffff",
     transition: "border-color 200ms ease, box-shadow 200ms ease",
-  };
-  const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  }), []);
+  const inputFocus = useMemo(() => (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     e.currentTarget.style.borderColor = "#1d3be0";
     e.currentTarget.style.boxShadow = "0 0 0 3px rgba(29,59,224,0.15)";
-  };
-  const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  }, []);
+  const inputBlur = useMemo(() => (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     e.currentTarget.style.borderColor = "#1a1a1f";
     e.currentTarget.style.boxShadow = "none";
-  };
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5" style={{ background: "#0a0a0d" }}>
@@ -204,6 +204,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
 
         {/* Add button — signature button-in-button */}
         <button
+          type="button"
           onClick={handleAddUrl}
           disabled={!url.trim() || urlLoading}
           aria-label="Add URL to knowledge graph"
@@ -258,6 +259,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
       {/* ── Note section ── */}
       <section className="space-y-3">
         <button
+          type="button"
           onClick={() => setNoteOpen((o) => !o)}
           className="flex items-center gap-2 w-full cursor-pointer"
           aria-expanded={noteOpen}
@@ -311,6 +313,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
               onBlur={inputBlur}
             />
             <button
+              type="button"
               onClick={handleAddNote}
               disabled={!noteContent.trim() || noteLoading}
               aria-label="Save note to knowledge graph"

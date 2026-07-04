@@ -243,6 +243,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
             </p>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setForgetConfirm(false)}
                 aria-label="Cancel forget"
                 className="flex-1 rounded-[6px] py-2.5 text-[12px] font-medium cursor-pointer active:scale-[0.98]"

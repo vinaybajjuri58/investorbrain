@@ -2,23 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const prefersReducedMotion = (): boolean => {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
 /**
  * Scroll-reveal hook backed by IntersectionObserver.
  * Never uses window scroll listeners. Respects prefers-reduced-motion.
  */
 export function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [reduced, setReduced] = useState(false);
+  const [reduced] = useState(prefersReducedMotion);
+  const [visible, setVisible] = useState(reduced);
 
   useEffect(() => {
-    // Honour the user's motion preference immediately.
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mq.matches) {
-      setReduced(true);
-      setVisible(true);
-      return;
-    }
+    if (reduced) return;
 
     const el = ref.current;
     if (!el) return;
@@ -35,7 +34,7 @@ export function useReveal() {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [reduced]);
 
   return { ref, visible, reduced };
 }

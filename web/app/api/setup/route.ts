@@ -6,7 +6,25 @@ import { listOntologies, uploadOntology } from "@/lib/cognee";
 
 export const runtime = "nodejs";
 
+let cachedOwl: string | null = null;
+let cachedOwlError: string | null = null;
+
+function getOwlContent(): { content?: string; error?: string } {
+  if (cachedOwl) return { content: cachedOwl };
+  if (cachedOwlError) return { error: cachedOwlError };
+  try {
+    const owlPath = join(process.cwd(), "ontology", "investing.owl");
+    cachedOwl = readFileSync(owlPath, "utf-8");
+    return { content: cachedOwl };
+  } catch (err: unknown) {
+    cachedOwlError = err instanceof Error ? err.message : String(err);
+    return { error: cachedOwlError };
+  }
+}
+
 export async function POST(_request: NextRequest) {
+  void _request;
+
   // Require authentication — ontology setup is an admin operation
   const session = await auth();
   if (!session?.user?.email) {
@@ -14,14 +32,10 @@ export async function POST(_request: NextRequest) {
   }
 
   // Read the OWL file from disk relative to the project root
-  let owlContent: string;
-  try {
-    const owlPath = join(process.cwd(), "ontology", "investing.owl");
-    owlContent = readFileSync(owlPath, "utf-8");
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
+  const owl = getOwlContent();
+  if (owl.error || !owl.content) {
     return Response.json(
-      { error: `Could not read ontology file: ${msg}` },
+      { error: `Could not read ontology file: ${owl.error}` },
       { status: 500 }
     );
   }
@@ -48,7 +62,7 @@ export async function POST(_request: NextRequest) {
   try {
     await uploadOntology(
       "investing",
-      owlContent,
+      owl.content,
       "InvestorBrain investing domain ontology"
     );
   } catch (err: unknown) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { fetchJson } from "@/app/hooks/useApi";
 import GraphCanvas, { type GraphData } from "@/app/components/GraphCanvas";
@@ -82,8 +83,8 @@ export default function Dashboard({ user }: DashboardProps) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchGraph();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchGraph, refreshTick]);
 
   useEffect(() => {
@@ -103,9 +104,6 @@ export default function Dashboard({ user }: DashboardProps) {
       clearInterval(id);
     };
   }, []);
-
-  const processingRef = useRef(status);
-  processingRef.current = status;
 
   useEffect(() => {
     if (status !== "processing") return;
@@ -215,6 +213,7 @@ export default function Dashboard({ user }: DashboardProps) {
         {user && (
           <div className="relative flex-shrink-0 ml-0.5" ref={userMenuRef}>
             <button
+              type="button"
               onClick={() => setUserMenuOpen((v) => !v)}
               aria-label="User menu"
               aria-expanded={userMenuOpen}
@@ -224,12 +223,13 @@ export default function Dashboard({ user }: DashboardProps) {
               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
             >
               {user.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={user.image}
                   alt={user.name ?? "User avatar"}
                   referrerPolicy="no-referrer"
-                  className="w-7 h-7 rounded-full object-cover"
+                  width={28}
+                  height={28}
+                  className="rounded-full object-cover"
                   style={{ border: "1px solid rgba(255,255,255,0.08)" }}
                 />
               ) : (
@@ -312,7 +312,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   onClick={() => setActiveTab(tab)}
                   style={{
                     fontFamily: "var(--font-geist-sans)",
-                    transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+                    transition: "background 200ms cubic-bezier(0.32,0.72,0,1), color 200ms cubic-bezier(0.32,0.72,0,1)",
                     background: activeTab === tab ? "#1d3be0" : "transparent",
                     color: activeTab === tab ? "#ffffff" : "rgba(255,255,255,0.4)",
                   }}

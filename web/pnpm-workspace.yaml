@@ -1,3 +1,5 @@
+trustPolicy: any
+minimumReleaseAge: 72
 allowBuilds:
   sharp: true
   unrs-resolver: true

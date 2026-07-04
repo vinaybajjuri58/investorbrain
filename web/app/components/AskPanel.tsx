@@ -200,9 +200,10 @@ export default function AskPanel() {
         className="flex-none px-3 pt-3 pb-2.5 flex flex-wrap gap-1.5"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
       >
-        {PRESETS.map((p, i) => (
+        {PRESETS.map((p) => (
           <button
-            key={i}
+            type="button"
+            key={p}
             onClick={() => ask(p)}
             title={p}
             className="text-[10.5px] rounded-full px-2.5 py-1 leading-tight text-left cursor-pointer active:scale-95"
@@ -210,7 +211,7 @@ export default function AskPanel() {
               color: "rgba(255,255,255,0.4)",
               background: "#0f0f12",
               border: "1px solid #1a1a1f",
-              transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+              transition: "color 200ms cubic-bezier(0.32,0.72,0,1), border-color 200ms cubic-bezier(0.32,0.72,0,1), background 200ms cubic-bezier(0.32,0.72,0,1)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = "#ffffff";

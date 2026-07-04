@@ -6,6 +6,8 @@ import { improve } from "@/lib/cognee";
 export const runtime = "nodejs";
 
 export async function POST(_request: NextRequest) {
+  void _request;
+
   const session = await auth();
   const email = session?.user?.email;
   if (!email) {

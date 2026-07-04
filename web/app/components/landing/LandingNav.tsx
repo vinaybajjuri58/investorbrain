@@ -78,7 +78,7 @@ export default function LandingNav({ isAuthed }: LandingNavProps) {
         >
           {/* Active: white pill */}
           <a
-            href="#"
+            href="#home"
             className="px-4 py-[6px] rounded-full bg-white text-[#111] text-[13px] font-medium whitespace-nowrap cursor-pointer"
           >
             Home

@@ -439,6 +439,7 @@ export default function GraphCanvas({
 
         {/* Refresh button */}
         <button
+          type="button"
           onClick={onRefresh}
           aria-label="Refresh graph"
           className="pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium active:scale-95 cursor-pointer"

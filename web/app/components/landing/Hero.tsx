@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 
 // ── All graph positions precomputed at module level ──────────────────────────
@@ -301,9 +300,6 @@ interface HeroProps {
 }
 
 export default function Hero({ isAuthed }: HeroProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
   return (
     <section
       className="relative overflow-hidden min-h-[100dvh] flex flex-col"
@@ -335,19 +331,21 @@ export default function Hero({ isAuthed }: HeroProps) {
 
         {/* Bottom-left: heading + CTA */}
         <div
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0px)" : "translateY(24px)",
-            transition:
-              "opacity 800ms cubic-bezier(0.32,0.72,0,1), transform 800ms cubic-bezier(0.32,0.72,0,1)",
-          }}
+          className="animate-[ib-hero-enter_800ms_cubic-bezier(0.32,0.72,0,1)_forwards]"
         >
+          <style>{`
+            @keyframes ib-hero-enter {
+              from { opacity: 0; transform: translateY(24px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+
           {/* Micro-label above heading */}
           <p
             className="mb-4 text-white/55"
             style={{
               fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: "9px",
+              fontSize: "11px",
               letterSpacing: "0.22em",
               textTransform: "uppercase",
             }}
@@ -380,7 +378,7 @@ export default function Hero({ isAuthed }: HeroProps) {
         <div
           className="flex-shrink-0 self-end mb-1 hidden sm:block"
           style={{
-            opacity: mounted ? 0.55 : 0,
+            opacity: 0.55,
             transition: "opacity 1200ms cubic-bezier(0.32,0.72,0,1) 400ms",
           }}
         >
@@ -388,7 +386,7 @@ export default function Hero({ isAuthed }: HeroProps) {
             className="text-white block"
             style={{
               fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: "9px",
+              fontSize: "11px",
               letterSpacing: "0.25em",
               textTransform: "uppercase",
               writingMode: "vertical-rl",
