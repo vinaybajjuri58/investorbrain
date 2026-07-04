@@ -76,10 +76,22 @@ export default function Dashboard({ user }: DashboardProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [userMenuOpen]);
 
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  });
+
   const fetchGraph = useCallback(async () => {
     try {
       const data = await fetchJson<GraphData>("/api/graph");
-      if (data.nodes) setGraphData(data);
+      if (data.nodes) {
+        // During processing, Cognee may report an empty graph mid-pipeline
+        // (old nodes evicted, new ones not yet extracted). Keep the previous
+        // data so the canvas never shows the empty state while processing.
+        if (data.nodes.length > 0 || statusRef.current !== "processing") {
+          setGraphData(data);
+        }
+      }
     } catch {
       // ignore — Cognee may not be running yet
     } finally {
