@@ -22,5 +22,15 @@ export async function POST(_request: NextRequest) {
     return Response.json({ error: `Improve failed: ${msg}` }, { status: 502 });
   }
 
-  return Response.json({ ok: true, status: result });
+  // Cognee returns { "<dataset-uuid>": { status, ... } } for background runs.
+  // The client renders `status` as text, so reduce it to a string.
+  const run = Object.values(result)[0];
+  const status =
+    typeof run === "string"
+      ? run
+      : run && typeof run === "object" && "status" in run
+        ? String((run as { status: unknown }).status)
+        : "Memory improvement queued.";
+
+  return Response.json({ ok: true, status });
 }
