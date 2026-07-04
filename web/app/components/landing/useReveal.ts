@@ -1,11 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-const prefersReducedMotion = (): boolean => {
+// useSyncExternalStore subscribe/snapshot for prefers-reduced-motion.
+// getServerSnapshot always returns false → server and initial client render both
+// see false, avoiding SSR hydration mismatch.
+function subscribe(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function getSnapshot(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
+}
+
+function getServerSnapshot(): boolean {
+  return false;
+}
 
 /**
  * Scroll-reveal hook backed by IntersectionObserver.
@@ -13,8 +27,10 @@ const prefersReducedMotion = (): boolean => {
  */
 export function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
-  const [reduced] = useState(prefersReducedMotion);
-  const [visible, setVisible] = useState(reduced);
+  // useSyncExternalStore avoids calling setState in an effect body and handles
+  // SSR/hydration correctly via the getServerSnapshot returning false.
+  const reduced = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (reduced) return;
@@ -36,5 +52,7 @@ export function useReveal() {
     return () => observer.disconnect();
   }, [reduced]);
 
-  return { ref, visible, reduced };
+  // When reduced is true, treat the element as always visible so consumers
+  // skip their transition and show content immediately.
+  return { ref, visible: reduced || visible, reduced };
 }

@@ -52,7 +52,7 @@ function AnswerMarkdown({ text }: { text: string }) {
       while (i < lines.length && /^[-*]\s/.test(lines[i])) {
         const content = lines[i].replace(/^[-*]\s/, "");
         items.push(
-          <li key={`li-ul-${content.replace(/\s/g, "-").slice(0, 20)}`}><InlineMarkup text={content} /></li>
+          <li key={`li-ul-${i}-${content.slice(0, 12)}`}><InlineMarkup text={content} /></li>
         );
         i++;
       }
@@ -69,7 +69,7 @@ function AnswerMarkdown({ text }: { text: string }) {
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
         const content = lines[i].replace(/^\d+\.\s/, "");
         items.push(
-          <li key={`li-ol-${content.replace(/\s/g, "-").slice(0, 20)}`}><InlineMarkup text={content} /></li>
+          <li key={`li-ol-${i}-${content.slice(0, 12)}`}><InlineMarkup text={content} /></li>
         );
         i++;
       }
@@ -84,7 +84,7 @@ function AnswerMarkdown({ text }: { text: string }) {
     if (/^###\s/.test(line)) {
       const headingContent = line.replace(/^###\s/, "");
       nodes.push(
-        <p key={`h3-${headingContent.slice(0, 24)}`} className="font-semibold mt-2.5 mb-0.5 text-[12.5px]" style={{ color: "#ffffff" }}>
+        <p key={`h3-${i}-${headingContent.slice(0, 24)}`} className="font-semibold mt-2.5 mb-0.5 text-[12.5px]" style={{ color: "#ffffff" }}>
           <InlineMarkup text={headingContent} />
         </p>
       );
@@ -94,7 +94,7 @@ function AnswerMarkdown({ text }: { text: string }) {
     if (/^##\s/.test(line)) {
       const headingContent = line.replace(/^##\s/, "");
       nodes.push(
-        <p key={`h2-${headingContent.slice(0, 24)}`} className="font-bold mt-2.5 mb-0.5 text-[13px]" style={{ color: "#ffffff" }}>
+        <p key={`h2-${i}-${headingContent.slice(0, 24)}`} className="font-bold mt-2.5 mb-0.5 text-[13px]" style={{ color: "#ffffff" }}>
           <InlineMarkup text={headingContent} />
         </p>
       );
@@ -103,7 +103,7 @@ function AnswerMarkdown({ text }: { text: string }) {
     }
 
     nodes.push(
-      <p key={`p-${line.slice(0, 24)}`} className="leading-relaxed" style={{ color: "#a6a6ad" }}>
+      <p key={`p-${i}-${line.slice(0, 24)}`} className="leading-relaxed" style={{ color: "#a6a6ad" }}>
         <InlineMarkup text={line} />
       </p>
     );

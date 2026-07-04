@@ -1,10 +1,6 @@
-import { nodeColour } from "@/app/components/graphTypes";
+import { type GraphNode, nodeColour } from "@/app/components/graphTypes";
 
-export interface SelectedNode {
-  id: string;
-  label: string;
-  type: string;
-}
+export type SelectedNode = Pick<GraphNode, "id" | "label" | "type">;
 
 interface Props {
   selected: SelectedNode;

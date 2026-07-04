@@ -70,6 +70,16 @@ export default function GraphCanvas({
     return () => obs.disconnect();
   }, []);
 
+  // When the graph becomes empty, reset zoom-to-fit state so the next
+  // re-population triggers zoomToFit again (onEngineStop never fires while
+  // isEmpty, so we reset here instead).
+  useEffect(() => {
+    if (graphData.nodes.length === 0) {
+      hasZoomedRef.current = false;
+      prevNodeCount.current = 0;
+    }
+  }, [graphData.nodes.length]);
+
   const handleEngineStop = useCallback(() => {
     const n = graphData.nodes.length;
     if (n > 0 && prevNodeCount.current === 0) {

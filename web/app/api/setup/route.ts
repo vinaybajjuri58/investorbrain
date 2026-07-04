@@ -7,18 +7,17 @@ import { listOntologies, uploadOntology } from "@/lib/cognee";
 export const runtime = "nodejs";
 
 let cachedOwl: string | null = null;
-let cachedOwlError: string | null = null;
 
 function getOwlContent(): { content?: string; error?: string } {
   if (cachedOwl) return { content: cachedOwl };
-  if (cachedOwlError) return { error: cachedOwlError };
   try {
     const owlPath = join(process.cwd(), "ontology", "investing.owl");
     cachedOwl = readFileSync(owlPath, "utf-8");
     return { content: cachedOwl };
   } catch (err: unknown) {
-    cachedOwlError = err instanceof Error ? err.message : String(err);
-    return { error: cachedOwlError };
+    // Do not cache the error — let the next request retry the read.
+    const error = err instanceof Error ? err.message : String(err);
+    return { error };
   }
 }
 

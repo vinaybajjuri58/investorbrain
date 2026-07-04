@@ -302,6 +302,7 @@ interface HeroProps {
 export default function Hero({ isAuthed }: HeroProps) {
   return (
     <section
+      id="home"
       className="relative overflow-hidden min-h-[100dvh] flex flex-col"
       style={{
         background:
