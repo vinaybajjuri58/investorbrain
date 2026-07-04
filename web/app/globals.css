@@ -2,29 +2,29 @@
 
 /* ─────────────────────────────────────────────
    DESIGN TOKENS — Cantor8-inspired
-   Near-OLED black · institutional electric blue
+   Pure OLED black · institutional royal blue
    Signals: emerald=SUPPORTS · red=CONTRADICTS
 ───────────────────────────────────────────── */
 @theme inline {
-  /* Surfaces — true near-black layering */
-  --color-base:          #030508;
-  --color-panel:         #070c14;
-  --color-card:          #0b1120;
-  --color-raised:        #0f1c2e;
+  /* Surfaces — true OLED black layering */
+  --color-base:          #050505;
+  --color-panel:         #0a0a0d;
+  --color-card:          #0f0f12;
+  --color-raised:        #16161a;
 
-  /* Borders — blue-tinted hairlines */
-  --color-edge:          #112238;
-  --color-edge-strong:   #1a3050;
+  /* Borders — white-alpha hairlines on black */
+  --color-edge:          #17171b;
+  --color-edge-strong:   #232329;
 
   /* Text */
-  --color-ink:           #d8e3f2;
-  --color-ink-dim:       #56738e;
-  --color-ink-faint:     #2d4460;
+  --color-ink:           #ffffff;
+  --color-ink-dim:       #a6a6ad;
+  --color-ink-faint:     #5c5c66;
 
-  /* Accent — institutional electric blue (Cantor8) */
-  --color-accent:        #2563eb;
-  --color-accent-bright: #3b82f6;
-  --color-accent-muted:  rgba(37, 99, 235, 0.12);
+  /* Accent — institutional royal blue (Cantor8) */
+  --color-accent:        #1d3be0;
+  --color-accent-bright: #2447f0;
+  --color-accent-muted:  rgba(29, 59, 224, 0.12);
 
   /* Semantic */
   --color-positive:      #22c55e;
@@ -32,8 +32,8 @@
   --color-warning:       #f59e0b;
 
   /* Backward-compat aliases */
-  --color-background:    #030508;
-  --color-foreground:    #d8e3f2;
+  --color-background:    #050505;
+  --color-foreground:    #ffffff;
 
   /* Fonts */
   --font-sans:    var(--font-geist-sans);
@@ -49,23 +49,23 @@ html,
 body {
   height: 100%;
   overflow: hidden;
-  background: #030508;
-  color: #d8e3f2;
+  background: #050505;
+  color: #ffffff;
 }
 
-/* Subtle blue radial ambient at top — like Cantor8's depth */
+/* Subtle royal-blue radial ambient at top */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.07) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(29,59,224,0.10) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
 /* ── Focus ring: blue, keyboard-only ── */
 *:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #2447f0;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -79,11 +79,11 @@ body::before {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a3050;
+  background: #232329;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #304a68;
+  background: #3a3a44;
 }
 
 /* ── Thinking dots ── */
@@ -103,9 +103,9 @@ body::before {
 .skeleton {
   background: linear-gradient(
     90deg,
-    #0b1120 25%,
-    #0f1c2e 50%,
-    #0b1120 75%
+    #0f0f12 25%,
+    #16161a 50%,
+    #0f0f12 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -122,5 +122,5 @@ body::before {
 
 /* ── Blue glow utilities ── */
 .glow-accent {
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.45), 0 0 6px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 20px rgba(29, 59, 224, 0.45), 0 0 6px rgba(29, 59, 224, 0.2);
 }

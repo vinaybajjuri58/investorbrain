@@ -56,7 +56,7 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5 text-[#8daac8]">
+        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5" style={{ color: "#a6a6ad" }}>
           {items}
         </ul>
       );
@@ -72,7 +72,7 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5 text-[#8daac8]">
+        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5" style={{ color: "#a6a6ad" }}>
           {items}
         </ol>
       );
@@ -81,7 +81,7 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^###\s/.test(line)) {
       nodes.push(
-        <p key={`h3-${i}`} className="font-semibold text-[#d8e3f2] mt-2.5 mb-0.5 text-[12.5px]">
+        <p key={`h3-${i}`} className="font-semibold mt-2.5 mb-0.5 text-[12.5px]" style={{ color: "#ffffff" }}>
           {renderInline(line.replace(/^###\s/, ""))}
         </p>
       );
@@ -90,7 +90,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (/^##\s/.test(line)) {
       nodes.push(
-        <p key={`h2-${i}`} className="font-bold text-[#d8e3f2] mt-2.5 mb-0.5 text-[13px]">
+        <p key={`h2-${i}`} className="font-bold mt-2.5 mb-0.5 text-[13px]" style={{ color: "#ffffff" }}>
           {renderInline(line.replace(/^##\s/, ""))}
         </p>
       );
@@ -99,7 +99,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
 
     nodes.push(
-      <p key={`p-${i}`} className="text-[#8daac8] leading-relaxed">
+      <p key={`p-${i}`} className="leading-relaxed" style={{ color: "#a6a6ad" }}>
         {renderInline(line)}
       </p>
     );
@@ -114,7 +114,7 @@ function renderInline(text: string): React.ReactNode {
   return parts.map((part, idx) => {
     if (part.startsWith("**") && part.endsWith("**"))
       return (
-        <strong key={idx} className="text-[#d8e3f2] font-semibold">
+        <strong key={idx} className="font-semibold" style={{ color: "#ffffff" }}>
           {part.slice(2, -2)}
         </strong>
       );
@@ -125,7 +125,7 @@ function renderInline(text: string): React.ReactNode {
         <code
           key={idx}
           className="px-1.5 py-0.5 rounded text-[0.82em] font-mono"
-          style={{ background: "#0f1c2e", color: "#3b82f6", border: "1px solid #1a3050" }}
+          style={{ background: "rgba(29,59,224,0.15)", color: "#8fa3ff", border: "1px solid rgba(29,59,224,0.3)" }}
         >
           {part.slice(1, -1)}
         </code>
@@ -138,6 +138,7 @@ function renderInline(text: string): React.ReactNode {
 export default function AskPanel() {
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<QAItem[]>([]);
+  const [sendHovered, setSendHovered] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when history grows
@@ -192,12 +193,12 @@ export default function AskPanel() {
   );
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#070c14" }}>
+    <div className="flex flex-col h-full" style={{ background: "#0a0a0d" }}>
 
       {/* ── Preset chips ── */}
       <div
         className="flex-none px-3 pt-3 pb-2.5 flex flex-wrap gap-1.5"
-        style={{ borderBottom: "1px solid #112238" }}
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
       >
         {PRESETS.map((p, i) => (
           <button
@@ -206,20 +207,20 @@ export default function AskPanel() {
             title={p}
             className="text-[10.5px] rounded-full px-2.5 py-1 leading-tight text-left cursor-pointer active:scale-95"
             style={{
-              color: "#56738e",
-              background: "#0b1120",
-              border: "1px solid #1a3050",
+              color: "rgba(255,255,255,0.4)",
+              background: "#0f0f12",
+              border: "1px solid #1a1a1f",
               transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#d8e3f2";
-              e.currentTarget.style.borderColor = "rgba(37,99,235,0.4)";
-              e.currentTarget.style.background = "#0f1c2e";
+              e.currentTarget.style.color = "#ffffff";
+              e.currentTarget.style.borderColor = "rgba(29,59,224,0.6)";
+              e.currentTarget.style.background = "#16161a";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#56738e";
-              e.currentTarget.style.borderColor = "#1a3050";
-              e.currentTarget.style.background = "#0b1120";
+              e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+              e.currentTarget.style.borderColor = "#1a1a1f";
+              e.currentTarget.style.background = "#0f0f12";
             }}
           >
             {p.length > 38 ? p.slice(0, 36) + "…" : p}
@@ -236,30 +237,30 @@ export default function AskPanel() {
         {history.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center gap-4 px-4 py-8">
             {/* Decorative graph icon with glow */}
-            <div style={{ filter: "drop-shadow(0 0 12px rgba(37,99,235,0.35))" }}>
+            <div style={{ filter: "drop-shadow(0 0 12px rgba(29,59,224,0.35))" }}>
               <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden>
-                <circle cx="22" cy="22" r="19" stroke="#112238" strokeWidth="1.5"/>
-                <circle cx="22" cy="22" r="19" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.25"/>
-                <line x1="22" y1="22" x2="10" y2="10" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
-                <line x1="22" y1="22" x2="34" y2="10" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
-                <line x1="22" y1="22" x2="10" y2="34" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
-                <line x1="22" y1="22" x2="34" y2="34" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
+                <circle cx="22" cy="22" r="19" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"/>
+                <circle cx="22" cy="22" r="19" stroke="#1d3be0" strokeWidth="1" strokeOpacity="0.25"/>
+                <line x1="22" y1="22" x2="10" y2="10" stroke="#1d3be0" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="34" y2="10" stroke="#1d3be0" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="10" y2="34" stroke="#1d3be0" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="34" y2="34" stroke="#1d3be0" strokeWidth="1" strokeOpacity="0.5"/>
                 <circle cx="10" cy="10" r="3" fill="#22c55e"/>
                 <circle cx="34" cy="10" r="3" fill="#4f9cf9"/>
                 <circle cx="10" cy="34" r="3" fill="#ef4444"/>
                 <circle cx="34" cy="34" r="3" fill="#a78bfa"/>
-                <circle cx="22" cy="22" r="5" fill="#2563eb"/>
+                <circle cx="22" cy="22" r="5" fill="#1d3be0"/>
                 <circle cx="20" cy="20" r="1.5" fill="rgba(255,255,255,0.3)"/>
               </svg>
             </div>
             <div className="space-y-1.5">
               <p
-                className="text-[12.5px] font-semibold text-[#56738e]"
-                style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
+                className="text-[12.5px] font-semibold"
+                style={{ color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
               >
                 Ask your knowledge graph
               </p>
-              <p className="text-[11px]" style={{ color: "#2d4460" }}>
+              <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.25)" }}>
                 Use a preset above or type below.
               </p>
             </div>
@@ -272,11 +273,11 @@ export default function AskPanel() {
             {/* Question — right-aligned, blue bubble */}
             <div className="flex justify-end">
               <div
-                className="max-w-[85%] rounded-2xl rounded-tr-[6px] px-3.5 py-2 text-[12.5px] leading-relaxed font-medium"
+                className="max-w-[85%] rounded-xl rounded-tr-[6px] px-3.5 py-2 text-[12.5px] leading-relaxed font-medium"
                 style={{
-                  background: "linear-gradient(135deg, #1e40af, #2563eb)",
-                  color: "#e8f0ff",
-                  boxShadow: "0 2px 12px rgba(37,99,235,0.25)",
+                  background: "linear-gradient(160deg, #2447f0, #12279d)",
+                  color: "#ffffff",
+                  boxShadow: "0 2px 14px rgba(29,59,224,0.35)",
                 }}
               >
                 {item.question}
@@ -286,10 +287,10 @@ export default function AskPanel() {
             {/* Answer — left-aligned */}
             <div className="flex justify-start">
               <div
-                className="max-w-[90%] rounded-2xl rounded-tl-[6px] px-3.5 py-2.5 text-[12.5px]"
+                className="max-w-[90%] rounded-xl rounded-tl-[6px] px-3.5 py-2.5 text-[12.5px]"
                 style={{
-                  background: "#0b1120",
-                  border: "1px solid #112238",
+                  background: "#0f0f12",
+                  border: "1px solid #1a1a1f",
                 }}
               >
                 {item.loading ? (
@@ -298,7 +299,7 @@ export default function AskPanel() {
                       <span
                         key={n}
                         className="thinking-dot w-1.5 h-1.5 rounded-full inline-block"
-                        style={{ background: "#2563eb" }}
+                        style={{ background: "#1d3be0" }}
                       />
                     ))}
                   </div>
@@ -320,7 +321,7 @@ export default function AskPanel() {
       {/* ── Input area ── */}
       <div
         className="flex-none p-3"
-        style={{ borderTop: "1px solid #112238", background: "#070c14" }}
+        style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "#0a0a0d" }}
       >
         <div className="flex gap-2 items-end">
           <textarea
@@ -332,54 +333,60 @@ export default function AskPanel() {
             aria-label="Question input"
             className="flex-1 rounded-xl px-3.5 py-2.5 text-[12.5px] resize-none focus:outline-none"
             style={{
-              background: "#0b1120",
-              border: "1px solid #1a3050",
-              color: "#d8e3f2",
+              background: "#0f0f12",
+              border: "1px solid #1a1a1f",
+              color: "#ffffff",
               transition: "border-color 200ms ease, box-shadow 200ms ease",
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = "rgba(37,99,235,0.5)";
-              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)";
+              e.currentTarget.style.borderColor = "#1d3be0";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(29,59,224,0.15)";
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = "#1a3050";
+              e.currentTarget.style.borderColor = "#1a1a1f";
               e.currentTarget.style.boxShadow = "none";
             }}
           />
 
-          {/* Send button */}
+          {/* Send button — signature button-in-button */}
           <button
             onClick={() => ask(question)}
             disabled={!question.trim()}
             aria-label="Submit question"
-            className="flex-none flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[11.5px] font-semibold h-[58px] cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex-none flex items-stretch rounded-[6px] overflow-hidden h-[58px] cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
             style={{
-              background: question.trim() ? "#2563eb" : "#0f1c2e",
-              color:      question.trim() ? "#e8f0ff" : "#2d4460",
-              border:     "1px solid transparent",
-              transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+              background: "#ffffff",
+              border: "none",
+              transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
             }}
-            onMouseEnter={(e) => {
-              if (question.trim()) {
-                e.currentTarget.style.background = "#3b82f6";
-                e.currentTarget.style.boxShadow = "0 0 20px rgba(37,99,235,0.45)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (question.trim()) {
-                e.currentTarget.style.background = "#2563eb";
-                e.currentTarget.style.boxShadow = "none";
-              }
-            }}
+            onMouseEnter={() => setSendHovered(true)}
+            onMouseLeave={() => setSendHovered(false)}
           >
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
-              <path d="M1 6.5h11M7.5 2L12 6.5 7.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Ask
+            <span className="flex items-center px-4 text-[12px] font-semibold" style={{ color: "#000000" }}>
+              Ask
+            </span>
+            <span
+              className="flex items-center justify-center w-[58px]"
+              style={{
+                background: "#1d3be0",
+                transform: sendHovered ? "translate(1px,-1px)" : "translate(0,0)",
+                transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
+              }}
+            >
+              <span style={{ color: "#ffffff", fontSize: "15px", lineHeight: 1 }}>↗</span>
+            </span>
           </button>
         </div>
 
-        <p className="text-[10px] mt-1.5 pl-0.5" style={{ color: "#2d4460" }}>
+        <p
+          className="mt-1.5 pl-0.5 uppercase"
+          style={{
+            fontFamily: "var(--font-geist-mono)",
+            fontSize: "9px",
+            letterSpacing: "0.2em",
+            color: "rgba(255,255,255,0.25)",
+          }}
+        >
           ⌘ + Enter to submit
         </p>
       </div>

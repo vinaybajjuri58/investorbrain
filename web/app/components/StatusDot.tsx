@@ -7,9 +7,9 @@ interface Props {
 }
 
 const STATUS_CONFIG = {
-  processing: { dot: "#2563eb", label: "processing", ring: true },
+  processing: { dot: "#1d3be0", label: "processing", ring: true },
   completed:  { dot: "#22c55e", label: "ready",      ring: false },
-  idle:       { dot: "#1a3050", label: "idle",        ring: false },
+  idle:       { dot: "#26262c", label: "idle",        ring: false },
 } as const;
 
 export default function StatusDot({ status }: Props) {
@@ -30,8 +30,8 @@ export default function StatusDot({ status }: Props) {
         )}
       </div>
       <span
-        className="text-[9.5px] font-mono tracking-[0.1em] uppercase tabular-nums"
-        style={{ color: "#2d4460" }}
+        className="text-[9px] font-mono tracking-[0.2em] uppercase tabular-nums"
+        style={{ color: "#4d4d55" }}
       >
         {cfg.label}
       </span>

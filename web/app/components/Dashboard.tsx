@@ -134,48 +134,59 @@ export default function Dashboard({ user }: DashboardProps) {
 
   return (
     <div
-      className="flex flex-col h-full text-[#d8e3f2] select-none relative z-[1]"
-      style={{ background: "#030508", borderTop: "3px solid #2563eb" }}
+      className="flex flex-col h-full text-white select-none relative z-[1]"
+      style={{ background: "#050505", borderTop: "3px solid #1d3be0" }}
     >
 
       {/* ── Top bar ── */}
-      <header className="flex-none h-14 flex items-center px-5 gap-4 border-b border-[#112238]"
-        style={{ background: "rgba(7,12,20,0.96)", backdropFilter: "blur(8px)" }}
+      <header
+        className="flex-none h-14 flex items-center px-5 gap-4"
+        style={{
+          background: "rgba(5,5,5,0.92)",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}
       >
 
         {/* Logo mark + brand name */}
         <div className="flex items-center gap-3 flex-shrink-0">
           {/* Knowledge-graph icon with subtle glow */}
-          <div style={{ filter: "drop-shadow(0 0 6px rgba(37,99,235,0.5))" }}>
+          <div style={{ filter: "drop-shadow(0 0 6px rgba(29,59,224,0.5))" }}>
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
-              <line x1="10" y1="10" x2="4"  y2="4"  stroke="#3b82f6" strokeWidth="1" strokeOpacity="0.6"/>
-              <line x1="10" y1="10" x2="16" y2="4"  stroke="#3b82f6" strokeWidth="1" strokeOpacity="0.6"/>
-              <line x1="10" y1="10" x2="4"  y2="16" stroke="#3b82f6" strokeWidth="1" strokeOpacity="0.6"/>
-              <line x1="10" y1="10" x2="16" y2="16" stroke="#3b82f6" strokeWidth="1" strokeOpacity="0.6"/>
+              <line x1="10" y1="10" x2="4"  y2="4"  stroke="white" strokeWidth="1" strokeOpacity="0.55"/>
+              <line x1="10" y1="10" x2="16" y2="4"  stroke="white" strokeWidth="1" strokeOpacity="0.55"/>
+              <line x1="10" y1="10" x2="4"  y2="16" stroke="white" strokeWidth="1" strokeOpacity="0.55"/>
+              <line x1="10" y1="10" x2="16" y2="16" stroke="white" strokeWidth="1" strokeOpacity="0.55"/>
               <circle cx="4"  cy="4"  r="2"   fill="#22c55e"/>
               <circle cx="16" cy="4"  r="2"   fill="#4f9cf9"/>
               <circle cx="4"  cy="16" r="2"   fill="#ef4444"/>
               <circle cx="16" cy="16" r="2"   fill="#a78bfa"/>
-              <circle cx="10" cy="10" r="3.5" fill="#2563eb"/>
+              <circle cx="10" cy="10" r="3.5" fill="white"/>
               <circle cx="8.7" cy="8.7" r="1.1" fill="rgba(255,255,255,0.3)"/>
             </svg>
           </div>
 
           <div className="flex flex-col leading-none gap-0.5">
             <span
-              className="text-[13px] font-semibold tracking-[0.01em] text-[#d8e3f2]"
+              className="text-[13px] font-semibold tracking-[0.01em] text-white"
               style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
             >
               InvestorBrain
             </span>
-            <span className="hidden sm:block text-[9.5px] text-[#2d4460] font-mono tracking-[0.1em] uppercase">
+            <span
+              className="hidden sm:block text-[9.5px] font-mono tracking-[0.1em] uppercase"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+            >
               bias-aware memory
             </span>
           </div>
         </div>
 
         {/* Vertical rule */}
-        <div className="hidden sm:block w-px h-5 bg-[#112238] flex-shrink-0" />
+        <div
+          className="hidden sm:block w-px h-5 flex-shrink-0"
+          style={{ background: "rgba(255,255,255,0.08)" }}
+        />
 
         <div className="flex-1" />
 
@@ -183,11 +194,15 @@ export default function Dashboard({ user }: DashboardProps) {
         {nodeCount > 0 && (
           <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0">
             <span
-              className="text-[9px] font-mono text-[#2d4460] tracking-[0.12em] uppercase"
+              className="text-[9px] font-mono tracking-[0.12em] uppercase"
+              style={{ color: "rgba(255,255,255,0.25)" }}
             >
               graph
             </span>
-            <span className="text-[11px] font-mono text-[#56738e] tabular-nums">
+            <span
+              className="text-[11px] font-mono tabular-nums"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               {nodeCount}&thinsp;n · {edgeCount}&thinsp;e
             </span>
           </div>
@@ -204,8 +219,8 @@ export default function Dashboard({ user }: DashboardProps) {
               aria-label="User menu"
               aria-expanded={userMenuOpen}
               className="flex items-center justify-center w-7 h-7 rounded-full overflow-hidden cursor-pointer"
-              style={{ transition: "box-shadow 200ms ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 0 2px #2563eb66")}
+              style={{ transition: "box-shadow 200ms cubic-bezier(0.32,0.72,0,1)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 0 2px rgba(29,59,224,0.5)")}
               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
             >
               {user.image ? (
@@ -215,12 +230,12 @@ export default function Dashboard({ user }: DashboardProps) {
                   alt={user.name ?? "User avatar"}
                   referrerPolicy="no-referrer"
                   className="w-7 h-7 rounded-full object-cover"
-                  style={{ border: "1px solid #1a3050" }}
+                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
                 />
               ) : (
                 <span
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
-                  style={{ background: "#2563eb", color: "#030508", border: "1px solid #1a3050" }}
+                  style={{ background: "#1d3be0", color: "#ffffff", border: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   {userInitial}
                 </span>
@@ -231,24 +246,30 @@ export default function Dashboard({ user }: DashboardProps) {
             {userMenuOpen && (
               <div
                 className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl z-50 overflow-hidden"
-                style={{ background: "#0b1120", border: "1px solid #112238" }}
+                style={{ background: "#0a0a0d", border: "1px solid rgba(255,255,255,0.10)" }}
               >
-                <div className="px-3.5 py-3" style={{ borderBottom: "1px solid #112238" }}>
+                <div className="px-3.5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
                   {user.name && (
-                    <p className="text-[12px] font-medium text-[#d8e3f2] truncate">
+                    <p className="text-[12px] font-medium text-white truncate">
                       {user.name}
                     </p>
                   )}
-                  <p className="text-[10.5px] text-[#2d4460] truncate mt-0.5 font-mono">
+                  <p
+                    className="text-[10.5px] truncate mt-0.5 font-mono"
+                    style={{ color: "rgba(255,255,255,0.30)" }}
+                  >
                     {user.email}
                   </p>
                 </div>
                 <button
                   onClick={() => signOut({ redirectTo: "/signin" })}
-                  className="w-full text-left px-3.5 py-2.5 text-[12px] text-[#56738e] hover:text-[#d8e3f2] cursor-pointer"
-                  style={{ transition: "color 150ms ease, background 150ms ease" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#0f1c2e")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  className="w-full text-left px-3.5 py-2.5 text-[12px] cursor-pointer"
+                  style={{
+                    color: "rgba(255,255,255,0.50)",
+                    transition: "color 150ms cubic-bezier(0.32,0.72,0,1), background 150ms cubic-bezier(0.32,0.72,0,1)",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.50)"; e.currentTarget.style.background = "transparent"; }}
                 >
                   Sign out
                 </button>
@@ -262,7 +283,7 @@ export default function Dashboard({ user }: DashboardProps) {
       <div className="flex flex-1 min-h-0">
 
         {/* Graph canvas — left ~65% */}
-        <div className="flex-[65] min-w-0" style={{ borderRight: "1px solid #112238" }}>
+        <div className="flex-[65] min-w-0" style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
           <GraphCanvas
             graphData={graphData}
             isProcessing={status === "processing"}
@@ -273,34 +294,40 @@ export default function Dashboard({ user }: DashboardProps) {
         {/* Control panel — right ~35% */}
         <div
           className="flex-[35] min-w-[320px] max-w-[420px] flex flex-col"
-          style={{ background: "#070c14" }}
+          style={{ background: "#0a0a0d" }}
         >
 
-          {/* Tab strip */}
-          <div className="flex-none flex" style={{ borderBottom: "1px solid #112238" }}>
-            {(["ask", "add", "memory"] as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))",
-                  transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
-                  background: activeTab === tab ? "rgba(37,99,235,0.1)" : "transparent",
-                  borderBottom: activeTab === tab ? "2px solid #2563eb" : "2px solid transparent",
-                  marginBottom: "-1px",
-                  color: activeTab === tab ? "#d8e3f2" : "#2d4460",
-                }}
-                className="flex-1 py-3.5 text-[10.5px] font-semibold tracking-[0.1em] uppercase cursor-pointer"
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab) e.currentTarget.style.color = "#56738e";
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab) e.currentTarget.style.color = "#2d4460";
-                }}
-              >
-                {TAB_LABELS[tab]}
-              </button>
-            ))}
+          {/* Tab strip — landing pill style */}
+          <div
+            className="flex-none flex items-center px-3 py-2.5"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <div
+              className="flex flex-1 rounded-full gap-0.5"
+              style={{ background: "rgba(255,255,255,0.06)", padding: "5px" }}
+            >
+              {(["ask", "add", "memory"] as Tab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    fontFamily: "var(--font-geist-sans)",
+                    transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+                    background: activeTab === tab ? "#1d3be0" : "transparent",
+                    color: activeTab === tab ? "#ffffff" : "rgba(255,255,255,0.4)",
+                  }}
+                  className="flex-1 py-[7px] text-[12px] font-medium rounded-full cursor-pointer"
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab) e.currentTarget.style.color = "rgba(255,255,255,0.70)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab) e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+                  }}
+                >
+                  {TAB_LABELS[tab]}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Tab content */}

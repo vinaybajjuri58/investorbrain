@@ -72,6 +72,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
   const [url, setUrl]             = useState("");
   const [urlLoading, setUrlLoading] = useState(false);
   const [urlResult, setUrlResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [addUrlHovered, setAddUrlHovered] = useState(false);
 
   const [noteOpen, setNoteOpen]   = useState(false);
   const [noteTitle, setNoteTitle] = useState("");
@@ -148,38 +149,37 @@ export default function SourcePanel({ onSourceAdded }: Props) {
   const yt = url.trim() ? isYouTube(url.trim()) : null;
 
   const inputStyle = {
-    background: "#0b1120",
-    border: "1px solid #1a3050",
-    color: "#d8e3f2",
+    background: "#0f0f12",
+    border: "1px solid #1a1a1f",
+    color: "#ffffff",
     transition: "border-color 200ms ease, box-shadow 200ms ease",
   };
   const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.currentTarget.style.borderColor = "rgba(37,99,235,0.5)";
-    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)";
+    e.currentTarget.style.borderColor = "#1d3be0";
+    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(29,59,224,0.15)";
   };
   const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.currentTarget.style.borderColor = "#1a3050";
+    e.currentTarget.style.borderColor = "#1a1a1f";
     e.currentTarget.style.boxShadow = "none";
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5" style={{ background: "#070c14" }}>
+    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5" style={{ background: "#0a0a0d" }}>
 
       {/* ── URL section ── */}
       <section className="space-y-3">
-        {/* Section header — Cantor8-style label */}
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-3.5 rounded-full" style={{ background: "#2563eb" }} />
-          <span
-            className="text-[9.5px] font-semibold tracking-[0.16em] uppercase"
-            style={{
-              color: "#56738e",
-              fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))",
-            }}
-          >
-            Add URL
-          </span>
-        </div>
+        {/* Section header — micro-label eyebrow */}
+        <span
+          className="uppercase"
+          style={{
+            fontFamily: "var(--font-geist-mono)",
+            fontSize: "9px",
+            letterSpacing: "0.2em",
+            color: "rgba(255,255,255,0.4)",
+          }}
+        >
+          → ADD URL
+        </span>
 
         {/* Input with icon overlay */}
         <div className="relative">
@@ -202,45 +202,43 @@ export default function SourcePanel({ onSourceAdded }: Props) {
           />
         </div>
 
-        {/* Add button — blue CTA with glow */}
+        {/* Add button — signature button-in-button */}
         <button
           onClick={handleAddUrl}
           disabled={!url.trim() || urlLoading}
           aria-label="Add URL to knowledge graph"
-          className="w-full rounded-xl py-2.5 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full flex items-stretch rounded-[6px] overflow-hidden h-[42px] cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
           style={{
-            background: "#2563eb",
-            color: "#e8f0ff",
-            border: "1px solid transparent",
-            transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+            background: "#ffffff",
+            border: "none",
+            transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
           }}
-          onMouseEnter={(e) => {
-            if (!e.currentTarget.disabled) {
-              e.currentTarget.style.background = "#3b82f6";
-              e.currentTarget.style.boxShadow = "0 0 20px rgba(37,99,235,0.45)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#2563eb";
-            e.currentTarget.style.boxShadow = "none";
-          }}
+          onMouseEnter={() => setAddUrlHovered(true)}
+          onMouseLeave={() => setAddUrlHovered(false)}
         >
-          {urlLoading ? (
-            <><SpinnerIcon /> Adding…</>
-          ) : (
-            <>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-              </svg>
-              Add to Memory
-            </>
-          )}
+          <span className="flex-1 flex items-center justify-center gap-2 text-[12px] font-semibold" style={{ color: "#000000" }}>
+            {urlLoading ? (
+              <><SpinnerIcon /> Adding…</>
+            ) : (
+              <>Add to Memory</>
+            )}
+          </span>
+          <span
+            className="flex items-center justify-center w-[42px]"
+            style={{
+              background: "#1d3be0",
+              transform: addUrlHovered ? "translate(1px,-1px)" : "translate(0,0)",
+              transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
+            }}
+          >
+            <span style={{ color: "#ffffff", fontSize: "15px", lineHeight: 1 }}>↗</span>
+          </span>
         </button>
 
         {/* URL result */}
         {urlResult && (
           <div
-            className={`flex items-start gap-2 rounded-xl px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
+            className={`flex items-start gap-2 rounded-[6px] px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
               urlResult.ok ? "text-[#22c55e]" : "text-[#f87171]"
             }`}
             style={{
@@ -255,33 +253,31 @@ export default function SourcePanel({ onSourceAdded }: Props) {
       </section>
 
       {/* Divider */}
-      <div style={{ borderTop: "1px solid #112238" }} />
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
 
       {/* ── Note section ── */}
       <section className="space-y-3">
         <button
           onClick={() => setNoteOpen((o) => !o)}
           className="flex items-center gap-2 w-full cursor-pointer"
-          style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
           aria-expanded={noteOpen}
         >
-          <div
-            className="w-1 h-3.5 rounded-full"
-            style={{
-              background: noteOpen ? "#2563eb" : "#1a3050",
-              transition: "background 200ms ease",
-            }}
-          />
           <span
-            className="text-[9.5px] font-semibold tracking-[0.16em] uppercase"
-            style={{ color: noteOpen ? "#56738e" : "#2d4460", transition: "color 150ms ease" }}
+            className="uppercase"
+            style={{
+              fontFamily: "var(--font-geist-mono)",
+              fontSize: "9px",
+              letterSpacing: "0.2em",
+              color: noteOpen ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.4)",
+              transition: "color 150ms ease",
+            }}
           >
-            Paste a Note
+            → PASTE A NOTE
           </span>
           <svg
             width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden
             style={{
-              color: "#2d4460",
+              color: "rgba(255,255,255,0.4)",
               transform: noteOpen ? "rotate(90deg)" : "rotate(0deg)",
               transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
             }}
@@ -318,19 +314,19 @@ export default function SourcePanel({ onSourceAdded }: Props) {
               onClick={handleAddNote}
               disabled={!noteContent.trim() || noteLoading}
               aria-label="Save note to knowledge graph"
-              className="w-full rounded-xl py-2.5 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-full rounded-[6px] py-2.5 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
-                background: "#0b1120",
-                border: "1px solid rgba(34,197,94,0.3)",
+                background: "#0f0f12",
+                border: "1px solid rgba(34,197,94,0.35)",
                 color: "#22c55e",
                 transition: "background 200ms ease",
               }}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.disabled)
-                  e.currentTarget.style.background = "#0f1c2e";
+                  e.currentTarget.style.background = "#16161a";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#0b1120";
+                e.currentTarget.style.background = "#0f0f12";
               }}
             >
               {noteLoading ? <><SpinnerIcon /> Saving…</> : "Save Note"}
@@ -338,7 +334,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
 
             {noteResult && (
               <div
-                className={`flex items-start gap-2 rounded-xl px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
+                className={`flex items-start gap-2 rounded-[6px] px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
                   noteResult.ok ? "text-[#22c55e]" : "text-[#f87171]"
                 }`}
                 style={{
@@ -355,7 +351,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
       </section>
 
       {/* ── Tip ── */}
-      <p className="text-[10.5px] leading-relaxed pt-1" style={{ color: "#2d4460" }}>
+      <p className="text-[10.5px] leading-relaxed pt-1" style={{ color: "rgba(255,255,255,0.25)" }}>
         YouTube videos and blog articles are auto-detected and transcribed.
         Notes are ingested as raw text.
         Cognee processes them into the knowledge graph in the background.
