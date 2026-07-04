@@ -74,7 +74,7 @@ export default function FoundationSection() {
               className="uppercase mb-6"
               style={{
                 fontFamily: "var(--font-geist-mono)",
-                fontSize: "10px",
+                fontSize: "12px",
                 letterSpacing: "0.2em",
                 color: "rgba(255,255,255,0.7)",
                 ...rv(visible, reduced, 0),

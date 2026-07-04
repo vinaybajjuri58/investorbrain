@@ -217,6 +217,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
 
         {!forgetConfirm ? (
           <button
+            type="button"
             onClick={handleForget}
             disabled={forgetStatus === "loading"}
             aria-label="Forget all memories"
@@ -304,7 +305,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
             className="uppercase"
             style={{
               fontFamily: "var(--font-geist-mono)",
-              fontSize: "10px",
+              fontSize: "12px",
               letterSpacing: "0.2em",
               color: "rgba(255,255,255,0.4)",
             }}

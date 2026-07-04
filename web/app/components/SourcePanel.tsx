@@ -173,7 +173,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
           className="uppercase"
           style={{
             fontFamily: "var(--font-geist-mono)",
-            fontSize: "10px",
+            fontSize: "12px",
             letterSpacing: "0.2em",
             color: "rgba(255,255,255,0.4)",
           }}
@@ -268,7 +268,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
             className="uppercase"
             style={{
               fontFamily: "var(--font-geist-mono)",
-              fontSize: "10px",
+              fontSize: "12px",
               letterSpacing: "0.2em",
               color: noteOpen ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.4)",
               transition: "color 150ms ease",

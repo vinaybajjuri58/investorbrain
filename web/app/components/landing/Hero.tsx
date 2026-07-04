@@ -345,7 +345,7 @@ export default function Hero({ isAuthed }: HeroProps) {
             className="mb-4 text-white/55"
             style={{
               fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: "11px",
+              fontSize: "12px",
               letterSpacing: "0.22em",
               textTransform: "uppercase",
             }}
@@ -386,7 +386,7 @@ export default function Hero({ isAuthed }: HeroProps) {
             className="text-white block"
             style={{
               fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: "11px",
+              fontSize: "12px",
               letterSpacing: "0.25em",
               textTransform: "uppercase",
               writingMode: "vertical-rl",

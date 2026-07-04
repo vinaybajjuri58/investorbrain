@@ -81,7 +81,7 @@ export default function ClosingCta() {
             left,
             top,
             fontFamily: "var(--font-geist-mono)",
-            fontSize: "10px",
+            fontSize: "12px",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
             color: "rgba(29,59,224,0.6)",
@@ -100,7 +100,7 @@ export default function ClosingCta() {
             className="uppercase mb-6"
             style={{
               fontFamily: "var(--font-geist-mono)",
-              fontSize: "10px",
+              fontSize: "12px",
               letterSpacing: "0.2em",
               color: "rgba(29,59,224,0.7)",
               ...rv(visible, reduced, 0),
