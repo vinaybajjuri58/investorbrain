@@ -1,4 +1,5 @@
 import { TYPE_COLOURS, LEGEND_LABELS } from "@/app/components/graphTypes";
+import SpinnerIcon from "@/app/components/Spinner";
 
 interface Props {
   usedTypes: string[];
@@ -8,7 +9,33 @@ interface Props {
 
 export default function GraphOverlay({ usedTypes, isProcessing, onRefresh }: Props) {
   return (
-    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between pointer-events-none">
+    <>
+      {isProcessing && (
+        <div className="absolute top-3 left-0 right-0 flex justify-center pointer-events-none">
+          <div
+            className="flex items-center gap-2 rounded-full px-4 py-2"
+            style={{
+              background:     "rgba(5,5,5,0.88)",
+              border:         "1px solid rgba(255,255,255,0.14)",
+              backdropFilter: "blur(8px)",
+              color:          "rgba(255,255,255,0.55)",
+            }}
+          >
+            <SpinnerIcon />
+            <span
+              style={{
+                fontFamily:    "var(--font-geist-mono)",
+                fontSize:      "10px",
+                letterSpacing: "0.15em",
+                color:         "rgba(255,255,255,0.55)",
+              }}
+            >
+              BUILDING MEMORY GRAPH…
+            </span>
+          </div>
+        </div>
+      )}
+      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between pointer-events-none">
       {usedTypes.length > 0 && (
         <div className="flex flex-wrap gap-1.5 max-w-[65%]">
           {usedTypes.map((k) => (
@@ -64,5 +91,6 @@ export default function GraphOverlay({ usedTypes, isProcessing, onRefresh }: Pro
         {isProcessing ? "Refreshing…" : "Refresh"}
       </button>
     </div>
+    </>
   );
 }

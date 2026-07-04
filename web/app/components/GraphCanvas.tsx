@@ -10,6 +10,7 @@ import {
 import dynamic from "next/dynamic";
 import type { ForceGraphMethods } from "react-force-graph-2d";
 import GraphEmptyState from "@/app/components/GraphEmptyState";
+import SpinnerIcon from "@/app/components/Spinner";
 import NodeDetailCard, { type SelectedNode } from "@/app/components/NodeDetailCard";
 import GraphOverlay from "@/app/components/GraphOverlay";
 import {
@@ -43,12 +44,14 @@ function getLinkLabel(link: unknown): string {
 interface Props {
   graphData: GraphData;
   isProcessing: boolean;
+  graphLoading: boolean;
   onRefresh: () => void;
 }
 
 export default function GraphCanvas({
   graphData,
   isProcessing,
+  graphLoading,
   onRefresh,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -199,7 +202,24 @@ export default function GraphCanvas({
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: "#050505" }}>
       <div ref={containerRef} className="w-full h-full">
-        {isEmpty ? (
+        {isEmpty && graphLoading ? (
+          <div
+            className="w-full h-full flex flex-col items-center justify-center gap-3 select-none pointer-events-none"
+            style={{ color: "rgba(255,255,255,0.35)" }}
+          >
+            <SpinnerIcon />
+            <span
+              style={{
+                fontFamily: "var(--font-geist-mono)",
+                fontSize: "10px",
+                letterSpacing: "0.2em",
+                color: "rgba(255,255,255,0.35)",
+              }}
+            >
+              LOADING MEMORY…
+            </span>
+          </div>
+        ) : isEmpty ? (
           <GraphEmptyState />
         ) : (
           <ForceGraph2D

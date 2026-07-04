@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { fetchJson } from "@/app/hooks/useApi";
+import SpinnerIcon from "@/app/components/Spinner";
 
 // ── Helpers ──
 function isYouTube(url: string): boolean {
@@ -49,14 +50,6 @@ function CheckIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
       <path d="M2 6l3 3 5-5.5" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg className="animate-spin" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
-      <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="20 10"/>
     </svg>
   );
 }

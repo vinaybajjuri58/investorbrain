@@ -52,6 +52,8 @@ export default function Dashboard({ user }: DashboardProps) {
     nodes: [],
     links: [],
   });
+  const [graphLoading, setGraphLoading] = useState(true);
+  const firstFetchDoneRef = useRef(false);
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [activeTab, setActiveTab] = useState<Tab>("ask");
   const [refreshTick, setRefreshTick] = useState(0);
@@ -80,6 +82,11 @@ export default function Dashboard({ user }: DashboardProps) {
       if (data.nodes) setGraphData(data);
     } catch {
       // ignore — Cognee may not be running yet
+    } finally {
+      if (!firstFetchDoneRef.current) {
+        firstFetchDoneRef.current = true;
+        setGraphLoading(false);
+      }
     }
   }, []);
 
@@ -110,6 +117,16 @@ export default function Dashboard({ user }: DashboardProps) {
     if (status !== "processing") return;
     const id = setInterval(fetchGraph, 8000);
     return () => clearInterval(id);
+  }, [status, fetchGraph]);
+
+  // Refresh once when processing completes, so nodes extracted after the
+  // last 8s poll tick still appear without a manual refresh.
+  const prevStatusRef = useRef(status);
+  useEffect(() => {
+    if (prevStatusRef.current === "processing" && status !== "processing") {
+      fetchGraph();
+    }
+    prevStatusRef.current = status;
   }, [status, fetchGraph]);
 
   const handleRefresh = useCallback(() => setRefreshTick((t) => t + 1), []);
@@ -289,6 +306,7 @@ export default function Dashboard({ user }: DashboardProps) {
           <GraphCanvas
             graphData={graphData}
             isProcessing={status === "processing"}
+            graphLoading={graphLoading}
             onRefresh={handleRefresh}
           />
         </div>
