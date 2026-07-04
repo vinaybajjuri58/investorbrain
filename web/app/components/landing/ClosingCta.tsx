@@ -81,7 +81,7 @@ export default function ClosingCta() {
             left,
             top,
             fontFamily: "var(--font-geist-mono)",
-            fontSize: "9px",
+            fontSize: "10px",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
             color: "rgba(29,59,224,0.6)",

@@ -51,7 +51,7 @@ export default function LandingFooter() {
               className="leading-none"
               style={{
                 fontFamily: "var(--font-geist-mono)",
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.08em",
                 color: "rgba(255,255,255,0.4)",
               }}
@@ -66,7 +66,7 @@ export default function LandingFooter() {
           <span
             style={{
               fontFamily: "var(--font-geist-mono)",
-              fontSize: "9px",
+              fontSize: "10px",
               letterSpacing: "0.08em",
               color: "rgba(255,255,255,0.4)",
             }}

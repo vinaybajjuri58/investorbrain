@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
   useState,
   useRef,
   useEffect,
@@ -37,6 +37,7 @@ function renderMarkdown(text: string): React.ReactNode {
   const lines = text.split("\n");
   const nodes: React.ReactNode[] = [];
   let i = 0;
+  let listItemCounter = 0;
 
   while (i < lines.length) {
     const line = lines[i];
@@ -49,9 +50,11 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^[-*]\s/.test(line)) {
       const items: React.ReactNode[] = [];
+      const startIdx = i;
       while (i < lines.length && /^[-*]\s/.test(lines[i])) {
+        const content = lines[i].replace(/^[-*]\s/, "");
         items.push(
-          <li key={i}>{renderInline(lines[i].replace(/^[-*]\s/, ""))}</li>
+          <li key={`li-ul-${startIdx}-${listItemCounter++}`}>{renderInline(content)}</li>
         );
         i++;
       }
@@ -65,9 +68,11 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^\d+\.\s/.test(line)) {
       const items: React.ReactNode[] = [];
+      const startIdx = i;
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        const content = lines[i].replace(/^\d+\.\s/, "");
         items.push(
-          <li key={i}>{renderInline(lines[i].replace(/^\d+\.\s/, ""))}</li>
+          <li key={`li-ol-${startIdx}-${listItemCounter++}`}>{renderInline(content)}</li>
         );
         i++;
       }
@@ -114,23 +119,23 @@ function renderInline(text: string): React.ReactNode {
   return parts.map((part, idx) => {
     if (part.startsWith("**") && part.endsWith("**"))
       return (
-        <strong key={idx} className="font-semibold" style={{ color: "#ffffff" }}>
+        <strong key={`b-${idx}`} className="font-semibold" style={{ color: "#ffffff" }}>
           {part.slice(2, -2)}
         </strong>
       );
     if (part.startsWith("*") && part.endsWith("*"))
-      return <em key={idx}>{part.slice(1, -1)}</em>;
+      return <em key={`e-${idx}`}>{part.slice(1, -1)}</em>;
     if (part.startsWith("`") && part.endsWith("`"))
       return (
         <code
-          key={idx}
+          key={`c-${idx}`}
           className="px-1.5 py-0.5 rounded text-[0.82em] font-mono"
           style={{ background: "rgba(29,59,224,0.15)", color: "#8fa3ff", border: "1px solid rgba(29,59,224,0.3)" }}
         >
           {part.slice(1, -1)}
         </code>
       );
-    return part;
+    return <React.Fragment key={`t-${idx}`}>{part}</React.Fragment>;
   });
 }
 
@@ -351,6 +356,7 @@ export default function AskPanel() {
 
           {/* Send button — signature button-in-button */}
           <button
+            type="button"
             onClick={() => ask(question)}
             disabled={!question.trim()}
             aria-label="Submit question"
@@ -383,7 +389,7 @@ export default function AskPanel() {
           className="mt-1.5 pl-0.5 uppercase"
           style={{
             fontFamily: "var(--font-geist-mono)",
-            fontSize: "9px",
+            fontSize: "10px",
             letterSpacing: "0.2em",
             color: "rgba(255,255,255,0.25)",
           }}

@@ -126,17 +126,13 @@ export default function GraphCanvas({
     return () => obs.disconnect();
   }, []);
 
-  // ZoomToFit when nodes first appear
-  useEffect(() => {
+  const handleEngineStop = useCallback(() => {
     const n = graphData.nodes.length;
     if (n > 0 && prevNodeCount.current === 0) {
       hasZoomedRef.current = false;
     }
     prevNodeCount.current = n;
-  }, [graphData.nodes.length]);
-
-  const handleEngineStop = useCallback(() => {
-    if (graphData.nodes.length > 0 && !hasZoomedRef.current) {
+    if (n > 0 && !hasZoomedRef.current) {
       hasZoomedRef.current = true;
       graphRef.current?.zoomToFit(700, 48);
     }
@@ -360,7 +356,7 @@ export default function GraphCanvas({
           style={{
             background: "rgba(5,5,5,0.95)",
             border: "1px solid rgba(255,255,255,0.10)",
-            backdropFilter: "blur(12px)",
+            backdropFilter: "blur(6px)",
             boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
           }}
         >
@@ -372,6 +368,7 @@ export default function GraphCanvas({
             }}
           >
             <button
+              type="button"
               onClick={() => setSelected(null)}
               aria-label="Dismiss node detail"
               className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-md cursor-pointer"
@@ -427,7 +424,7 @@ export default function GraphCanvas({
                   }}
                 />
                 <span
-                  className="text-[9px] font-mono tracking-[0.08em]"
+                  className="text-[10px] font-mono tracking-[0.08em]"
                   style={{ color: "rgba(255,255,255,0.40)" }}
                 >
                   {LEGEND_LABELS[k]}

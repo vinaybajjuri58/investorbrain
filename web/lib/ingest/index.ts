@@ -12,7 +12,7 @@ export interface SourceDocument {
   ingestedAt: string;
 }
 
-export function detectSourceType(url: string): "youtube" | "article" {
+function detectSourceType(url: string): "youtube" | "article" {
   try {
     const { hostname } = new URL(url);
     const h = hostname.toLowerCase();

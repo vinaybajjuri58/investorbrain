@@ -95,7 +95,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
         {/* Tag pill */}
         <div>
           <span
-            className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-semibold uppercase"
+            className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
             style={{
               fontFamily: "var(--font-geist-mono)",
               letterSpacing: "0.1em",
@@ -259,6 +259,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleForget}
                 aria-label="Confirm forget all"
                 className="flex-1 rounded-[6px] py-2.5 text-[12px] font-medium cursor-pointer active:scale-[0.98]"
@@ -302,7 +303,7 @@ export default function MemoryPanel({ onForgetAll }: Props) {
             className="uppercase"
             style={{
               fontFamily: "var(--font-geist-mono)",
-              fontSize: "9px",
+              fontSize: "10px",
               letterSpacing: "0.2em",
               color: "rgba(255,255,255,0.4)",
             }}

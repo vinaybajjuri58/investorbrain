@@ -30,7 +30,7 @@ export default function StatusDot({ status }: Props) {
         )}
       </div>
       <span
-        className="text-[9px] font-mono tracking-[0.2em] uppercase tabular-nums"
+        className="text-[10px] font-mono tracking-[0.2em] uppercase tabular-nums"
         style={{ color: "#4d4d55" }}
       >
         {cfg.label}

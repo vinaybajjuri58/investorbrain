@@ -379,7 +379,7 @@ export default function Hero({ isAuthed }: HeroProps) {
           className="flex-shrink-0 self-end mb-1 hidden sm:block"
           style={{
             opacity: 0.55,
-            transition: "opacity 1200ms cubic-bezier(0.32,0.72,0,1) 400ms",
+            transition: "opacity 800ms cubic-bezier(0.32,0.72,0,1) 400ms",
           }}
         >
           <span

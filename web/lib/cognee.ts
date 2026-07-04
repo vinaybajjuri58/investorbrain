@@ -213,23 +213,6 @@ export async function improve(
 }
 
 /**
- * Trigger memify on a dataset.
- * POST /api/v1/memify — body: { datasetName, runInBackground }
- */
-export async function memify(
-  datasetName: string
-): Promise<Record<string, unknown>> {
-  return cogneeRequest<Record<string, unknown>>("/api/v1/memify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      datasetName,
-      runInBackground: true,
-    }),
-  });
-}
-
-/**
  * Forget data from Cognee.
  * POST /api/v1/forget — body: { dataId?, dataset?, everything?, memoryOnly? }
  */

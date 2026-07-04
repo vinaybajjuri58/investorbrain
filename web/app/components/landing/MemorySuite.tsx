@@ -289,7 +289,7 @@ export default function MemorySuite() {
                 className="rounded-full px-2.5 py-1 bg-white"
                 style={{
                   fontFamily: "var(--font-geist-mono)",
-                  fontSize: "8px",
+                  fontSize: "10px",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   color: "#050505",

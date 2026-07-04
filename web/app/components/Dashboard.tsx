@@ -262,6 +262,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => signOut({ redirectTo: "/signin" })}
                   className="w-full text-left px-3.5 py-2.5 text-[12px] cursor-pointer"
                   style={{
