@@ -20,6 +20,8 @@ const SYSTEM_NODE_TYPES = new Set([
   "DatasetMigration",
   "Entity",
   "EntityType",
+  // Container root emitted once per ingested source; adds no domain meaning
+  "InvestingGraph",
 ]);
 
 function isSystemNode(type: string): boolean {
@@ -100,17 +102,43 @@ export async function GET() {
     };
   });
 
-  // Only include edges where both endpoints are domain nodes
-  const links = (graph.edges ?? [])
-    .filter(
-      (e) => domainNodeIds.has(e.source) && domainNodeIds.has(e.target),
-    )
-    .map((e) => ({
-      source: e.source,
-      target: e.target,
-      label: e.label,
-      type: e.label, // alias so callers can use either field name
-    }));
+  // Cognee extracts one node per source mention with no cross-source entity
+  // resolution, so "HDFC Bank" can appear once per ingested source. Merge
+  // nodes sharing (type, normalized name) into one canonical node so the
+  // graph renders as a single connected brain instead of per-source islands.
+  const canonicalByKey = new Map<string, (typeof nodes)[number]>();
+  const canonicalId = new Map<string, string>();
+  for (const n of nodes) {
+    const norm = (n.name || n.label || n.id)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    const key = `${n.type}|${norm}`;
+    const existing = canonicalByKey.get(key);
+    if (existing) {
+      canonicalId.set(n.id, existing.id);
+      // Fill in properties the canonical node is missing (e.g. stance)
+      existing.properties = { ...n.properties, ...existing.properties };
+    } else {
+      canonicalByKey.set(key, n);
+      canonicalId.set(n.id, n.id);
+    }
+  }
+  const mergedNodes = [...canonicalByKey.values()];
 
-  return Response.json({ nodes, links });
+  // Remap edges to canonical ids; drop self-loops and duplicates
+  const seenLinks = new Set<string>();
+  const links: { source: string; target: string; label: string; type: string }[] = [];
+  for (const e of graph.edges ?? []) {
+    if (!domainNodeIds.has(e.source) || !domainNodeIds.has(e.target)) continue;
+    const source = canonicalId.get(e.source) ?? e.source;
+    const target = canonicalId.get(e.target) ?? e.target;
+    if (source === target) continue;
+    const dedupeKey = `${source}|${target}|${e.label}`;
+    if (seenLinks.has(dedupeKey)) continue;
+    seenLinks.add(dedupeKey);
+    links.push({ source, target, label: e.label, type: e.label });
+  }
+
+  return Response.json({ nodes: mergedNodes, links });
 }
