@@ -56,7 +56,7 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5 text-[#c4d3e8]">
+        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-1.5 text-[#8daac8]">
           {items}
         </ul>
       );
@@ -72,7 +72,7 @@ function renderMarkdown(text: string): React.ReactNode {
         i++;
       }
       nodes.push(
-        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5 text-[#c4d3e8]">
+        <ol key={`ol-${i}`} className="list-decimal list-inside space-y-0.5 my-1.5 text-[#8daac8]">
           {items}
         </ol>
       );
@@ -81,7 +81,7 @@ function renderMarkdown(text: string): React.ReactNode {
 
     if (/^###\s/.test(line)) {
       nodes.push(
-        <p key={`h3-${i}`} className="font-semibold text-[#e4edf8] mt-2.5 mb-0.5 text-[12.5px]">
+        <p key={`h3-${i}`} className="font-semibold text-[#d8e3f2] mt-2.5 mb-0.5 text-[12.5px]">
           {renderInline(line.replace(/^###\s/, ""))}
         </p>
       );
@@ -90,7 +90,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (/^##\s/.test(line)) {
       nodes.push(
-        <p key={`h2-${i}`} className="font-bold text-[#e4edf8] mt-2.5 mb-0.5 text-[13px]">
+        <p key={`h2-${i}`} className="font-bold text-[#d8e3f2] mt-2.5 mb-0.5 text-[13px]">
           {renderInline(line.replace(/^##\s/, ""))}
         </p>
       );
@@ -99,7 +99,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
 
     nodes.push(
-      <p key={`p-${i}`} className="text-[#c4d3e8] leading-relaxed">
+      <p key={`p-${i}`} className="text-[#8daac8] leading-relaxed">
         {renderInline(line)}
       </p>
     );
@@ -114,7 +114,7 @@ function renderInline(text: string): React.ReactNode {
   return parts.map((part, idx) => {
     if (part.startsWith("**") && part.endsWith("**"))
       return (
-        <strong key={idx} className="text-[#e4edf8] font-semibold">
+        <strong key={idx} className="text-[#d8e3f2] font-semibold">
           {part.slice(2, -2)}
         </strong>
       );
@@ -124,7 +124,8 @@ function renderInline(text: string): React.ReactNode {
       return (
         <code
           key={idx}
-          className="bg-[#162035] text-[#fbbf24] px-1.5 py-0.5 rounded text-[0.82em] font-mono"
+          className="px-1.5 py-0.5 rounded text-[0.82em] font-mono"
+          style={{ background: "#0f1c2e", color: "#3b82f6", border: "1px solid #1a3050" }}
         >
           {part.slice(1, -1)}
         </code>
@@ -191,16 +192,35 @@ export default function AskPanel() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1320]">
+    <div className="flex flex-col h-full" style={{ background: "#070c14" }}>
 
       {/* ── Preset chips ── */}
-      <div className="flex-none px-3 pt-3 pb-2.5 flex flex-wrap gap-1.5 border-b border-[#1c2a3f]">
+      <div
+        className="flex-none px-3 pt-3 pb-2.5 flex flex-wrap gap-1.5"
+        style={{ borderBottom: "1px solid #112238" }}
+      >
         {PRESETS.map((p, i) => (
           <button
             key={i}
             onClick={() => ask(p)}
             title={p}
-            className="text-[10.5px] text-[#7b97b5] border border-[#253548] bg-[#111928] hover:bg-[#162035] hover:text-[#e4edf8] hover:border-[#f59e0b44] active:scale-95 rounded-full px-2.5 py-1 leading-tight transition-all duration-150 text-left cursor-pointer"
+            className="text-[10.5px] rounded-full px-2.5 py-1 leading-tight text-left cursor-pointer active:scale-95"
+            style={{
+              color: "#56738e",
+              background: "#0b1120",
+              border: "1px solid #1a3050",
+              transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#d8e3f2";
+              e.currentTarget.style.borderColor = "rgba(37,99,235,0.4)";
+              e.currentTarget.style.background = "#0f1c2e";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#56738e";
+              e.currentTarget.style.borderColor = "#1a3050";
+              e.currentTarget.style.background = "#0b1120";
+            }}
           >
             {p.length > 38 ? p.slice(0, 36) + "…" : p}
           </button>
@@ -214,18 +234,33 @@ export default function AskPanel() {
       >
         {/* Empty state */}
         {history.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center gap-3 px-4 py-8">
-            {/* Decorative icon */}
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden className="opacity-30">
-              <circle cx="16" cy="16" r="14" stroke="#f59e0b" strokeWidth="1.2"/>
-              <path d="M10 16h12M16 10v12" stroke="#f59e0b" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            <div className="space-y-1">
-              <p className="text-[#7b97b5] text-[12.5px] font-medium">
-                Ask anything about your investment knowledge
+          <div className="h-full flex flex-col items-center justify-center text-center gap-4 px-4 py-8">
+            {/* Decorative graph icon with glow */}
+            <div style={{ filter: "drop-shadow(0 0 12px rgba(37,99,235,0.35))" }}>
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden>
+                <circle cx="22" cy="22" r="19" stroke="#112238" strokeWidth="1.5"/>
+                <circle cx="22" cy="22" r="19" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.25"/>
+                <line x1="22" y1="22" x2="10" y2="10" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="34" y2="10" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="10" y2="34" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
+                <line x1="22" y1="22" x2="34" y2="34" stroke="#2563eb" strokeWidth="1" strokeOpacity="0.5"/>
+                <circle cx="10" cy="10" r="3" fill="#22c55e"/>
+                <circle cx="34" cy="10" r="3" fill="#4f9cf9"/>
+                <circle cx="10" cy="34" r="3" fill="#ef4444"/>
+                <circle cx="34" cy="34" r="3" fill="#a78bfa"/>
+                <circle cx="22" cy="22" r="5" fill="#2563eb"/>
+                <circle cx="20" cy="20" r="1.5" fill="rgba(255,255,255,0.3)"/>
+              </svg>
+            </div>
+            <div className="space-y-1.5">
+              <p
+                className="text-[12.5px] font-semibold text-[#56738e]"
+                style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
+              >
+                Ask your knowledge graph
               </p>
-              <p className="text-[#4a5c6e] text-[11px]">
-                Use a preset above or type a question below.
+              <p className="text-[11px]" style={{ color: "#2d4460" }}>
+                Use a preset above or type below.
               </p>
             </div>
           </div>
@@ -234,13 +269,14 @@ export default function AskPanel() {
         {/* Q&A history */}
         {history.map((item) => (
           <div key={item.id} className="space-y-2">
-            {/* Question — right-aligned */}
+            {/* Question — right-aligned, blue bubble */}
             <div className="flex justify-end">
               <div
-                className="max-w-[85%] rounded-xl rounded-tr-[4px] px-3 py-2 text-[12.5px] text-[#e4edf8] leading-relaxed"
+                className="max-w-[85%] rounded-2xl rounded-tr-[6px] px-3.5 py-2 text-[12.5px] leading-relaxed font-medium"
                 style={{
-                  background: "#162035",
-                  border: "1px solid #253548",
+                  background: "linear-gradient(135deg, #1e40af, #2563eb)",
+                  color: "#e8f0ff",
+                  boxShadow: "0 2px 12px rgba(37,99,235,0.25)",
                 }}
               >
                 {item.question}
@@ -250,19 +286,19 @@ export default function AskPanel() {
             {/* Answer — left-aligned */}
             <div className="flex justify-start">
               <div
-                className="max-w-[90%] rounded-xl rounded-tl-[4px] px-3 py-2.5 text-[12.5px]"
+                className="max-w-[90%] rounded-2xl rounded-tl-[6px] px-3.5 py-2.5 text-[12.5px]"
                 style={{
-                  background: "#111928",
-                  border: "1px solid #1c2a3f",
+                  background: "#0b1120",
+                  border: "1px solid #112238",
                 }}
               >
                 {item.loading ? (
-                  /* Thinking dots */
-                  <div className="flex items-center gap-1.5 py-1.5">
+                  <div className="flex items-center gap-1.5 py-1">
                     {[0, 1, 2].map((n) => (
                       <span
                         key={n}
-                        className="thinking-dot w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                        className="thinking-dot w-1.5 h-1.5 rounded-full inline-block"
+                        style={{ background: "#2563eb" }}
                       />
                     ))}
                   </div>
@@ -283,8 +319,8 @@ export default function AskPanel() {
 
       {/* ── Input area ── */}
       <div
-        className="flex-none p-3 border-t border-[#1c2a3f]"
-        style={{ background: "#0d1320" }}
+        className="flex-none p-3"
+        style={{ borderTop: "1px solid #112238", background: "#070c14" }}
       >
         <div className="flex gap-2 items-end">
           <textarea
@@ -294,13 +330,21 @@ export default function AskPanel() {
             placeholder="Ask about your knowledge graph…"
             rows={2}
             aria-label="Question input"
-            className="flex-1 rounded-lg px-3 py-2 text-[12.5px] text-[#e4edf8] placeholder-[#4a5c6e] resize-none focus:outline-none transition-colors duration-150"
+            className="flex-1 rounded-xl px-3.5 py-2.5 text-[12.5px] resize-none focus:outline-none"
             style={{
-              background:  "#111928",
-              border:      "1px solid #253548",
+              background: "#0b1120",
+              border: "1px solid #1a3050",
+              color: "#d8e3f2",
+              transition: "border-color 200ms ease, box-shadow 200ms ease",
             }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#f59e0b66")}
-            onBlur={(e)  => (e.currentTarget.style.borderColor = "#253548")}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "rgba(37,99,235,0.5)";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#1a3050";
+              e.currentTarget.style.boxShadow = "none";
+            }}
           />
 
           {/* Send button */}
@@ -308,19 +352,24 @@ export default function AskPanel() {
             onClick={() => ask(question)}
             disabled={!question.trim()}
             aria-label="Submit question"
-            className="flex-none flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11.5px] font-semibold transition-all duration-150 h-[58px] cursor-pointer active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed"
+            className="flex-none flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[11.5px] font-semibold h-[58px] cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
             style={{
-              background: question.trim() ? "#f59e0b" : "#162035",
-              color:      question.trim() ? "#080c14" : "#4a5c6e",
+              background: question.trim() ? "#2563eb" : "#0f1c2e",
+              color:      question.trim() ? "#e8f0ff" : "#2d4460",
               border:     "1px solid transparent",
+              transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
             }}
             onMouseEnter={(e) => {
-              if (question.trim())
-                e.currentTarget.style.background = "#fbbf24";
+              if (question.trim()) {
+                e.currentTarget.style.background = "#3b82f6";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(37,99,235,0.45)";
+              }
             }}
             onMouseLeave={(e) => {
-              if (question.trim())
-                e.currentTarget.style.background = "#f59e0b";
+              if (question.trim()) {
+                e.currentTarget.style.background = "#2563eb";
+                e.currentTarget.style.boxShadow = "none";
+              }
             }}
           >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
@@ -330,8 +379,8 @@ export default function AskPanel() {
           </button>
         </div>
 
-        <p className="text-[10px] text-[#4a5c6e] mt-1.5 pl-0.5">
-          Cmd/Ctrl + Enter to submit
+        <p className="text-[10px] mt-1.5 pl-0.5" style={{ color: "#2d4460" }}>
+          ⌘ + Enter to submit
         </p>
       </div>
     </div>

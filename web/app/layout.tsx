@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full`}
     >
-      <body className="h-full overflow-hidden bg-[#080c14] text-[#e4edf8] antialiased">
+      <body className="h-full overflow-hidden bg-[#030508] text-[#d8e3f2] antialiased">
         {children}
       </body>
     </html>

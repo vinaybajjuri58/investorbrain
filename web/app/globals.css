@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   DESIGN TOKENS — InvestorBrain
-   Palette: deep navy base · amber-gold accent
+   DESIGN TOKENS — Cantor8-inspired
+   Near-OLED black · institutional electric blue
    Signals: emerald=SUPPORTS · red=CONTRADICTS
 ───────────────────────────────────────────── */
 @theme inline {
-  /* Surfaces */
-  --color-base:          #080c14;
-  --color-panel:         #0d1320;
-  --color-card:          #111928;
-  --color-raised:        #162035;
+  /* Surfaces — true near-black layering */
+  --color-base:          #030508;
+  --color-panel:         #070c14;
+  --color-card:          #0b1120;
+  --color-raised:        #0f1c2e;
 
-  /* Borders */
-  --color-edge:          #1c2a3f;
-  --color-edge-strong:   #253548;
+  /* Borders — blue-tinted hairlines */
+  --color-edge:          #112238;
+  --color-edge-strong:   #1a3050;
 
   /* Text */
-  --color-ink:           #e4edf8;
-  --color-ink-dim:       #7b97b5;
-  --color-ink-faint:     #4a5c6e;
+  --color-ink:           #d8e3f2;
+  --color-ink-dim:       #56738e;
+  --color-ink-faint:     #2d4460;
 
-  /* Accent — amber/gold */
-  --color-gold:          #f59e0b;
-  --color-gold-bright:   #fbbf24;
+  /* Accent — institutional electric blue (Cantor8) */
+  --color-accent:        #2563eb;
+  --color-accent-bright: #3b82f6;
+  --color-accent-muted:  rgba(37, 99, 235, 0.12);
 
   /* Semantic */
   --color-positive:      #22c55e;
@@ -31,8 +32,8 @@
   --color-warning:       #f59e0b;
 
   /* Backward-compat aliases */
-  --color-background:    #080c14;
-  --color-foreground:    #e4edf8;
+  --color-background:    #030508;
+  --color-foreground:    #d8e3f2;
 
   /* Fonts */
   --font-sans:    var(--font-geist-sans);
@@ -48,13 +49,23 @@ html,
 body {
   height: 100%;
   overflow: hidden;
-  background: #080c14;
-  color: #e4edf8;
+  background: #030508;
+  color: #d8e3f2;
 }
 
-/* ── Focus ring: amber outline, keyboard-only ── */
+/* Subtle blue radial ambient at top — like Cantor8's depth */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Focus ring: blue, keyboard-only ── */
 *:focus-visible {
-  outline: 2px solid #f59e0b;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -68,11 +79,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #253548;
+  background: #1a3050;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a5c6e;
+  background: #304a68;
 }
 
 /* ── Thinking dots ── */
@@ -92,9 +103,9 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    #111928 25%,
-    #162035 50%,
-    #111928 75%
+    #0b1120 25%,
+    #0f1c2e 50%,
+    #0b1120 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -107,4 +118,9 @@ body {
 }
 .status-ring {
   animation: status-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Blue glow utilities ── */
+.glow-accent {
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.45), 0 0 6px rgba(37, 99, 235, 0.2);
 }

@@ -16,7 +16,7 @@ const ForceGraph2D = dynamic<any>(() => import("react-force-graph-2d"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
-      <span className="text-[#4a5c6e] text-[12px] font-mono tracking-wider">
+      <span className="text-[12px] font-mono tracking-wider" style={{ color: "#2d4460" }}>
         Loading graph…
       </span>
     </div>
@@ -43,7 +43,7 @@ export interface GraphData {
 }
 
 // ── Node type → colour ──
-// Colours are vivid against the #080c14 navy base.
+// Colours are vivid against the #060912 navy base.
 // Each type maps to a distinct hue — no two types share a hue family.
 const TYPE_COLOURS: Record<string, string> = {
   company:     "#4f9cf9",   // sky-blue
@@ -53,7 +53,7 @@ const TYPE_COLOURS: Record<string, string> = {
   bias:        "#f87171",   // rose-red
   source:      "#64748b",   // slate
   sectortheme: "#2dd4bf",   // teal-cyan
-  note:        "#fbbf24",   // amber-light (distinct from gold UI accent)
+  note:        "#f59e0b",   // amber (kept distinct from the blue UI accent)
   other:       "#6b7280",   // cool-gray
 };
 
@@ -225,9 +225,9 @@ export default function GraphCanvas({
     const cx = width / 2;
     const cy = height / 2;
     const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.hypot(cx, cy));
-    grad.addColorStop(0,   "#0d1829");
-    grad.addColorStop(0.5, "#0a1020");
-    grad.addColorStop(1,   "#080c14");
+    grad.addColorStop(0,   "#07101e");
+    grad.addColorStop(0.5, "#030508");
+    grad.addColorStop(1,   "#030508");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
@@ -256,50 +256,46 @@ export default function GraphCanvas({
   const isEmpty = graphData.nodes.length === 0;
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#080c14]">
+    <div className="relative w-full h-full overflow-hidden" style={{ background: "#030508" }}>
       <div ref={containerRef} className="w-full h-full">
 
         {/* ── Empty state ── */}
         {isEmpty ? (
           <div
-            className="w-full h-full flex flex-col items-center justify-center gap-5 select-none pointer-events-none"
+            className="w-full h-full flex flex-col items-center justify-center gap-6 select-none pointer-events-none"
             style={{
-              background: "radial-gradient(ellipse at 50% 50%, #0d1829 0%, #080c14 65%)",
+              background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(37,99,235,0.05) 0%, #030508 65%)",
             }}
           >
-            {/* Ghost graph illustration */}
-            <svg
-              width="72"
-              height="72"
-              viewBox="0 0 72 72"
-              fill="none"
-              aria-hidden
-              style={{ opacity: 0.18 }}
-            >
-              {/* Edges */}
-              <line x1="36" y1="36" x2="12" y2="12" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round"/>
-              <line x1="36" y1="36" x2="60" y2="12" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round"/>
-              <line x1="36" y1="36" x2="12" y2="60" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round"/>
-              <line x1="36" y1="36" x2="60" y2="60" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round"/>
-              <line x1="36" y1="36" x2="36" y2="10" stroke="#f59e0b" strokeWidth="1"   strokeLinecap="round"/>
-              {/* Satellite nodes */}
-              <circle cx="12" cy="12" r="6" stroke="#22c55e" strokeWidth="1.5"/>
-              <circle cx="60" cy="12" r="6" stroke="#4f9cf9" strokeWidth="1.5"/>
-              <circle cx="12" cy="60" r="6" stroke="#ef4444" strokeWidth="1.5"/>
-              <circle cx="60" cy="60" r="6" stroke="#a78bfa" strokeWidth="1.5"/>
-              <circle cx="36" cy="10" r="4" stroke="#fbbf24" strokeWidth="1.2"/>
-              {/* Centre */}
-              <circle cx="36" cy="36" r="10" stroke="#f59e0b" strokeWidth="1.5"/>
-              <circle cx="36" cy="36" r="5"  fill="#f59e0b" opacity="0.5"/>
-            </svg>
+            {/* Ghost graph with glow */}
+            <div style={{ filter: "drop-shadow(0 0 20px rgba(37,99,235,0.2))" }}>
+              <svg width="80" height="80" viewBox="0 0 72 72" fill="none" aria-hidden style={{ opacity: 0.45 }}>
+                <line x1="36" y1="36" x2="12" y2="12" stroke="#2563eb" strokeWidth="1" strokeLinecap="round"/>
+                <line x1="36" y1="36" x2="60" y2="12" stroke="#2563eb" strokeWidth="1" strokeLinecap="round"/>
+                <line x1="36" y1="36" x2="12" y2="60" stroke="#2563eb" strokeWidth="1" strokeLinecap="round"/>
+                <line x1="36" y1="36" x2="60" y2="60" stroke="#2563eb" strokeWidth="1" strokeLinecap="round"/>
+                <line x1="36" y1="36" x2="36" y2="10" stroke="#2563eb" strokeWidth="0.8" strokeLinecap="round"/>
+                <circle cx="12" cy="12" r="5" stroke="#22c55e" strokeWidth="1.2" fill="rgba(34,197,94,0.08)"/>
+                <circle cx="60" cy="12" r="5" stroke="#4f9cf9" strokeWidth="1.2" fill="rgba(79,156,249,0.08)"/>
+                <circle cx="12" cy="60" r="5" stroke="#ef4444" strokeWidth="1.2" fill="rgba(239,68,68,0.08)"/>
+                <circle cx="60" cy="60" r="5" stroke="#a78bfa" strokeWidth="1.2" fill="rgba(167,139,250,0.08)"/>
+                <circle cx="36" cy="10" r="3.5" stroke="#3b82f6" strokeWidth="1"/>
+                <circle cx="36" cy="36" r="9" stroke="#2563eb" strokeWidth="1.2"/>
+                <circle cx="36" cy="36" r="4.5" fill="#2563eb" opacity="0.6"/>
+                <circle cx="34" cy="34" r="1.5" fill="rgba(255,255,255,0.35)"/>
+              </svg>
+            </div>
 
-            <div className="text-center space-y-1">
-              <p className="text-[#7b97b5] text-[13px] font-medium">
-                Your knowledge graph is empty
+            <div className="text-center space-y-2">
+              <p
+                className="text-[13px] font-semibold"
+                style={{ color: "#56738e", fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
+              >
+                Knowledge graph empty
               </p>
-              <p className="text-[#4a5c6e] text-[11.5px]">
+              <p className="text-[11px]" style={{ color: "#2d4460" }}>
                 Add a YouTube video or article in the{" "}
-                <span className="text-[#f59e0b]">Add Source</span> tab to get started.
+                <span style={{ color: "#2563eb" }}>Add Source</span> tab.
               </p>
             </div>
           </div>
@@ -309,7 +305,7 @@ export default function GraphCanvas({
             graphData={graphData}
             width={dims.width}
             height={dims.height}
-            backgroundColor="#080c14"
+            backgroundColor="#030508"
             nodeLabel={(n: GraphNode) => n.label || String(n.id)}
             nodeCanvasObject={nodeCanvasObject}
             nodeCanvasObjectMode={() => "replace"}
@@ -319,7 +315,7 @@ export default function GraphCanvas({
               const lbl = getLinkLabel(lk);
               if (lbl === "CONTRADICTS") return "#ef4444";
               if (lbl === "SUPPORTS")    return "#22c55e";
-              return "#1c2a3f";
+              return "#112238";
             }}
             linkWidth={(lk: unknown) => {
               const lbl = getLinkLabel(lk);
@@ -336,7 +332,7 @@ export default function GraphCanvas({
               const lbl = getLinkLabel(lk);
               if (lbl === "CONTRADICTS") return "#ef4444";
               if (lbl === "SUPPORTS")    return "#22c55e";
-              return "#253548";
+              return "#1a3050";
             }}
             linkDirectionalParticleSpeed={0.0045}
             linkDirectionalParticleWidth={2.5}
@@ -357,43 +353,45 @@ export default function GraphCanvas({
       {/* ── Selected node card — double-bezel ── */}
       {selected && (
         <div
-          className="absolute top-3 left-3 z-20 p-[5px] rounded-[14px] bg-[#0d1320] border border-[#1c2a3f]"
-          style={{ backdropFilter: "blur(12px)" }}
+          className="absolute top-3 left-3 z-20 p-[5px] rounded-2xl"
+          style={{
+            background: "#030508",
+            border: "1px solid #112238",
+            backdropFilter: "blur(12px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+          }}
         >
-          {/* Inner core */}
           <div
-            className="relative bg-[#111928] rounded-[10px] px-4 pt-3.5 pb-3 max-w-[220px]"
+            className="relative rounded-[13px] px-4 pt-3.5 pb-3 max-w-[220px]"
             style={{
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+              background: "#0b1120",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
           >
-            {/* Close button */}
             <button
               onClick={() => setSelected(null)}
               aria-label="Dismiss node detail"
-              className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded text-[#4a5c6e] hover:text-[#e4edf8] hover:bg-[#162035] transition-colors duration-150 cursor-pointer"
+              className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-md cursor-pointer"
+              style={{ color: "#2d4460", transition: "color 150ms ease, background 150ms ease" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#d8e3f2"; e.currentTarget.style.background = "#0f1c2e"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#2d4460"; e.currentTarget.style.background = "transparent"; }}
             >
               <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
                 <path d="M1 1l7 7M8 1L1 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
               </svg>
             </button>
 
-            {/* Node type label */}
-            <p
-              className="text-[9.5px] font-mono uppercase tracking-[0.14em] text-[#4a5c6e] mb-1"
-            >
+            <p className="text-[9px] font-mono uppercase tracking-[0.16em] mb-1.5" style={{ color: "#2d4460" }}>
               {selected.type}
             </p>
 
-            {/* Node label */}
-            <p className="font-semibold text-[13px] text-[#e4edf8] leading-snug pr-5 text-wrap-balance">
+            <p className="font-semibold text-[13px] leading-snug pr-5" style={{ color: "#d8e3f2" }}>
               {selected.label}
             </p>
 
-            {/* Colour accent stripe */}
             <div
               className="mt-3 h-[2px] rounded-full"
-              style={{ background: nodeColour(selected.type) }}
+              style={{ background: nodeColour(selected.type), boxShadow: `0 0 6px ${nodeColour(selected.type)}88` }}
             />
           </div>
         </div>
@@ -410,8 +408,8 @@ export default function GraphCanvas({
                 key={k}
                 className="flex items-center gap-1.5 rounded-md px-2 py-1"
                 style={{
-                  background: "rgba(8,12,20,0.82)",
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(3,5,8,0.88)",
+                  border: "1px solid #112238",
                   backdropFilter: "blur(8px)",
                 }}
               >
@@ -422,7 +420,7 @@ export default function GraphCanvas({
                     boxShadow:   `0 0 6px ${TYPE_COLOURS[k]}99`,
                   }}
                 />
-                <span className="text-[9.5px] font-mono text-[#7b97b5]">
+                <span className="text-[9px] font-mono tracking-[0.08em]" style={{ color: "#56738e" }}>
                   {LEGEND_LABELS[k]}
                 </span>
               </div>
@@ -434,12 +432,16 @@ export default function GraphCanvas({
         <button
           onClick={onRefresh}
           aria-label="Refresh graph"
-          className="pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium text-[#7b97b5] hover:text-[#e4edf8] hover:border-[#f59e0b44] active:scale-95 transition-all duration-150 cursor-pointer"
+          className="pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium active:scale-95 cursor-pointer"
           style={{
-            background:     "rgba(8,12,20,0.82)",
-            border:         "1px solid rgba(37,53,72,0.8)",
+            background:     "rgba(3,5,8,0.85)",
+            border:         "1px solid #1a3050",
             backdropFilter: "blur(8px)",
+            color:          "#56738e",
+            transition:     "color 150ms ease, border-color 150ms ease",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#d8e3f2"; e.currentTarget.style.borderColor = "rgba(37,99,235,0.4)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#56738e"; e.currentTarget.style.borderColor = "#1a3050"; }}
         >
           <svg
             width="11"

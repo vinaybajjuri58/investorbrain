@@ -34,3 +34,5 @@ npm-debug.log*
 # Local agent tooling (third-party skills, not part of the app)
 .agents/
 .claude/
+.commandcode/
+.firecrawl/

@@ -37,10 +37,10 @@ function YouTubeIcon() {
 function ArticleIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
-      <rect x="2" y="2" width="11" height="11" rx="1.5" stroke="#7b97b5" strokeWidth="1.2"/>
-      <line x1="4" y1="5" x2="11" y2="5"  stroke="#7b97b5" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="4" y1="7.5" x2="11" y2="7.5" stroke="#7b97b5" strokeWidth="1" strokeLinecap="round"/>
-      <line x1="4" y1="10" x2="8"  y2="10"  stroke="#7b97b5" strokeWidth="1" strokeLinecap="round"/>
+      <rect x="2" y="2" width="11" height="11" rx="1.5" stroke="#7d8fa8" strokeWidth="1.2"/>
+      <line x1="4" y1="5" x2="11" y2="5"  stroke="#7d8fa8" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="4" y1="7.5" x2="11" y2="7.5" stroke="#7d8fa8" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="4" y1="10" x2="8"  y2="10"  stroke="#7d8fa8" strokeWidth="1" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -63,8 +63,8 @@ function SpinnerIcon() {
 
 // Shared input styles
 const inputCls = [
-  "w-full rounded-lg px-3 py-2.5 text-[12.5px] text-[#e4edf8]",
-  "placeholder-[#4a5c6e] focus:outline-none transition-colors duration-150",
+  "w-full rounded-xl px-3.5 py-2.5 text-[12.5px]",
+  "focus:outline-none",
 ].join(" ");
 
 // ── Component ──
@@ -147,27 +147,44 @@ export default function SourcePanel({ onSourceAdded }: Props) {
 
   const yt = url.trim() ? isYouTube(url.trim()) : null;
 
+  const inputStyle = {
+    background: "#0b1120",
+    border: "1px solid #1a3050",
+    color: "#d8e3f2",
+    transition: "border-color 200ms ease, box-shadow 200ms ease",
+  };
+  const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "rgba(37,99,235,0.5)";
+    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.08)";
+  };
+  const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "#1a3050";
+    e.currentTarget.style.boxShadow = "none";
+  };
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5 bg-[#0d1320]">
+    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5" style={{ background: "#070c14" }}>
 
       {/* ── URL section ── */}
-      <section className="space-y-2.5">
-        {/* Section header */}
-        <div
-          className="flex items-center gap-2 text-[10.5px] font-medium text-[#7b97b5] tracking-[0.08em] uppercase"
-          style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
-        >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
-            <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" strokeWidth="1.1"/>
-            <path d="M3.5 5.5h4M5.5 3.5v4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
-          </svg>
-          Add URL
+      <section className="space-y-3">
+        {/* Section header — Cantor8-style label */}
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-3.5 rounded-full" style={{ background: "#2563eb" }} />
+          <span
+            className="text-[9.5px] font-semibold tracking-[0.16em] uppercase"
+            style={{
+              color: "#56738e",
+              fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))",
+            }}
+          >
+            Add URL
+          </span>
         </div>
 
         {/* Input with icon overlay */}
         <div className="relative">
           {yt !== null && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
               {yt ? <YouTubeIcon /> : <ArticleIcon />}
             </span>
           )}
@@ -178,52 +195,57 @@ export default function SourcePanel({ onSourceAdded }: Props) {
             onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
             placeholder="https://youtube.com/… or https://blog.example.com/…"
             aria-label="Source URL"
-            className={`${inputCls} ${yt !== null ? "pl-9" : "pl-3"}`}
-            style={{
-              background: "#111928",
-              border:     "1px solid #253548",
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#f59e0b66")}
-            onBlur={(e)  => (e.currentTarget.style.borderColor = "#253548")}
+            className={`${inputCls} ${yt !== null ? "pl-9" : ""}`}
+            style={{ ...inputStyle, ...(yt !== null ? { paddingLeft: "2.25rem" } : {}) }}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
           />
         </div>
 
-        {/* Add button */}
+        {/* Add button — blue CTA with glow */}
         <button
           onClick={handleAddUrl}
           disabled={!url.trim() || urlLoading}
           aria-label="Add URL to knowledge graph"
-          className="w-full rounded-lg py-2.5 text-[12px] font-semibold transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-35 disabled:cursor-not-allowed"
+          className="w-full rounded-xl py-2.5 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
           style={{
-            background: "#f59e0b",
-            color:      "#080c14",
+            background: "#2563eb",
+            color: "#e8f0ff",
+            border: "1px solid transparent",
+            transition: "all 200ms cubic-bezier(0.32,0.72,0,1)",
           }}
           onMouseEnter={(e) => {
-            if (!e.currentTarget.disabled)
-              e.currentTarget.style.background = "#fbbf24";
+            if (!e.currentTarget.disabled) {
+              e.currentTarget.style.background = "#3b82f6";
+              e.currentTarget.style.boxShadow = "0 0 20px rgba(37,99,235,0.45)";
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#f59e0b";
+            e.currentTarget.style.background = "#2563eb";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
           {urlLoading ? (
             <><SpinnerIcon /> Adding…</>
           ) : (
-            "Add to Memory"
+            <>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+              Add to Memory
+            </>
           )}
         </button>
 
         {/* URL result */}
         {urlResult && (
           <div
-            className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-[11.5px] leading-relaxed ${
-              urlResult.ok
-                ? "text-[#22c55e]"
-                : "text-[#f87171]"
+            className={`flex items-start gap-2 rounded-xl px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
+              urlResult.ok ? "text-[#22c55e]" : "text-[#f87171]"
             }`}
             style={{
-              background: urlResult.ok ? "rgba(34,197,94,0.08)"  : "rgba(248,113,113,0.08)",
-              border:     urlResult.ok ? "1px solid rgba(34,197,94,0.2)" : "1px solid rgba(248,113,113,0.2)",
+              background: urlResult.ok ? "rgba(34,197,94,0.07)"  : "rgba(248,113,113,0.07)",
+              border:     urlResult.ok ? "1px solid rgba(34,197,94,0.18)" : "1px solid rgba(248,113,113,0.18)",
             }}
           >
             {urlResult.ok && <CheckIcon />}
@@ -233,27 +255,39 @@ export default function SourcePanel({ onSourceAdded }: Props) {
       </section>
 
       {/* Divider */}
-      <div className="border-t border-[#1c2a3f]" />
+      <div style={{ borderTop: "1px solid #112238" }} />
 
       {/* ── Note section ── */}
-      <section className="space-y-2.5">
+      <section className="space-y-3">
         <button
           onClick={() => setNoteOpen((o) => !o)}
-          className="flex items-center gap-2 w-full text-[10.5px] font-medium text-[#7b97b5] tracking-[0.08em] uppercase hover:text-[#e4edf8] transition-colors duration-150 cursor-pointer"
+          className="flex items-center gap-2 w-full cursor-pointer"
           style={{ fontFamily: "var(--font-space-grotesk, var(--font-geist-sans))" }}
           aria-expanded={noteOpen}
         >
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 11 11"
-            fill="none"
-            aria-hidden
-            className={`transition-transform duration-200 ${noteOpen ? "rotate-90" : ""}`}
+          <div
+            className="w-1 h-3.5 rounded-full"
+            style={{
+              background: noteOpen ? "#2563eb" : "#1a3050",
+              transition: "background 200ms ease",
+            }}
+          />
+          <span
+            className="text-[9.5px] font-semibold tracking-[0.16em] uppercase"
+            style={{ color: noteOpen ? "#56738e" : "#2d4460", transition: "color 150ms ease" }}
           >
-            <path d="M3.5 2l4 3.5-4 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            Paste a Note
+          </span>
+          <svg
+            width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden
+            style={{
+              color: "#2d4460",
+              transform: noteOpen ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 200ms cubic-bezier(0.32,0.72,0,1)",
+            }}
+          >
+            <path d="M3 2l4 3-4 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Paste a note
         </button>
 
         {noteOpen && (
@@ -265,12 +299,9 @@ export default function SourcePanel({ onSourceAdded }: Props) {
               placeholder="Title (optional)"
               aria-label="Note title"
               className={inputCls}
-              style={{
-                background: "#111928",
-                border:     "1px solid #253548",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#f59e0b66")}
-              onBlur={(e)  => (e.currentTarget.style.borderColor = "#253548")}
+              style={inputStyle}
+              onFocus={inputFocus}
+              onBlur={inputBlur}
             />
             <textarea
               value={noteContent}
@@ -279,46 +310,40 @@ export default function SourcePanel({ onSourceAdded }: Props) {
               rows={5}
               aria-label="Note content"
               className={`${inputCls} resize-none`}
-              style={{
-                background: "#111928",
-                border:     "1px solid #253548",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#f59e0b66")}
-              onBlur={(e)  => (e.currentTarget.style.borderColor = "#253548")}
+              style={inputStyle}
+              onFocus={inputFocus}
+              onBlur={inputBlur}
             />
             <button
               onClick={handleAddNote}
               disabled={!noteContent.trim() || noteLoading}
               aria-label="Save note to knowledge graph"
-              className="w-full rounded-lg py-2.5 text-[12px] font-semibold transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-35 disabled:cursor-not-allowed"
+              className="w-full rounded-xl py-2.5 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
-                background: "#111928",
-                border:     "1px solid rgba(34,197,94,0.35)",
-                color:      "#22c55e",
+                background: "#0b1120",
+                border: "1px solid rgba(34,197,94,0.3)",
+                color: "#22c55e",
+                transition: "background 200ms ease",
               }}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.disabled)
-                  e.currentTarget.style.background = "#162035";
+                  e.currentTarget.style.background = "#0f1c2e";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#111928";
+                e.currentTarget.style.background = "#0b1120";
               }}
             >
-              {noteLoading ? (
-                <><SpinnerIcon /> Saving…</>
-              ) : (
-                "Save Note"
-              )}
+              {noteLoading ? <><SpinnerIcon /> Saving…</> : "Save Note"}
             </button>
 
             {noteResult && (
               <div
-                className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-[11.5px] leading-relaxed ${
+                className={`flex items-start gap-2 rounded-xl px-3.5 py-2.5 text-[11.5px] leading-relaxed ${
                   noteResult.ok ? "text-[#22c55e]" : "text-[#f87171]"
                 }`}
                 style={{
-                  background: noteResult.ok ? "rgba(34,197,94,0.08)"  : "rgba(248,113,113,0.08)",
-                  border:     noteResult.ok ? "1px solid rgba(34,197,94,0.2)" : "1px solid rgba(248,113,113,0.2)",
+                  background: noteResult.ok ? "rgba(34,197,94,0.07)" : "rgba(248,113,113,0.07)",
+                  border:     noteResult.ok ? "1px solid rgba(34,197,94,0.18)" : "1px solid rgba(248,113,113,0.18)",
                 }}
               >
                 {noteResult.ok && <CheckIcon />}
@@ -330,7 +355,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
       </section>
 
       {/* ── Tip ── */}
-      <p className="text-[10.5px] text-[#4a5c6e] leading-relaxed pt-1">
+      <p className="text-[10.5px] leading-relaxed pt-1" style={{ color: "#2d4460" }}>
         YouTube videos and blog articles are auto-detected and transcribed.
         Notes are ingested as raw text.
         Cognee processes them into the knowledge graph in the background.
