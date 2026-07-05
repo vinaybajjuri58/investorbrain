@@ -84,6 +84,8 @@ export interface RecallOptions {
   searchType?: SearchType;
   datasets?: string[];
   topK?: number;
+  /** Overrides the default completion prompt. Used to ground answers in graph context. */
+  systemPrompt?: string;
 }
 
 export interface ForgetOptions {
@@ -191,6 +193,7 @@ export async function recall(
       searchType: opts.searchType ?? "GRAPH_COMPLETION",
       datasets: opts.datasets ?? null,
       topK: opts.topK ?? 15,
+      systemPrompt: opts.systemPrompt ?? null,
     }),
   });
 }
