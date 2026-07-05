@@ -219,6 +219,23 @@ export default function GraphCanvas({
               LOADING MEMORY…
             </span>
           </div>
+        ) : isEmpty && isProcessing ? (
+          <div
+            className="w-full h-full flex flex-col items-center justify-center gap-3 select-none pointer-events-none"
+            style={{ color: "rgba(255,255,255,0.35)" }}
+          >
+            <SpinnerIcon />
+            <span
+              style={{
+                fontFamily: "var(--font-geist-mono)",
+                fontSize: "10px",
+                letterSpacing: "0.2em",
+                color: "rgba(255,255,255,0.35)",
+              }}
+            >
+              BUILDING MEMORY GRAPH…
+            </span>
+          </div>
         ) : isEmpty ? (
           <GraphEmptyState />
         ) : (
