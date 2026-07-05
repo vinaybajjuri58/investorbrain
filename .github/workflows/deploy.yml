@@ -1,0 +1,59 @@
+# =============================================================================
+# Deploy to VPS on every push to main.
+#
+# Flow: SSH into the Hostinger VPS → git pull in /root/investorbrain →
+# rebuild/restart only what changed via docker compose.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST     — server IP
+#   VPS_SSH_KEY  — private half of the dedicated deploy keypair
+#     (public half lives in /root/.ssh/authorized_keys on the VPS)
+#
+# The server's .env is NOT managed by this workflow — secrets stay on the VPS.
+# =============================================================================
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  # Manual re-deploy button in the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  # Never run two deploys at once; a newer push supersedes a queued one
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Pull and rebuild on VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key root@"${{ secrets.VPS_HOST }}" bash -s << 'DEPLOY'
+          set -euo pipefail
+          cd /root/investorbrain
+          git fetch origin main
+          git reset --hard origin/main
+          docker compose -f deploy/docker-compose.vps.yml up -d --build
+          # Reclaim disk from superseded image layers
+          docker image prune -f
+          DEPLOY
+
+      - name: Verify deployment
+        run: |
+          sleep 30
+          ssh -i ~/.ssh/deploy_key root@"${{ secrets.VPS_HOST }}" \
+            'docker ps --filter name=deploy- --format "{{.Names}}: {{.Status}}" | tee /dev/stderr | grep -q "deploy-web-1: Up" || exit 1'
+          # Public smoke test: the site must answer 200 over HTTPS
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://brain.desiquant.com/)
+          echo "https://brain.desiquant.com -> HTTP $code"
+          [ "$code" = "200" ]
