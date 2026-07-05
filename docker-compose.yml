@@ -4,7 +4,9 @@ services:
   cognee:
     image: cognee/cognee:main
     ports:
-      - "8000:8000"
+      # Loopback only — the register endpoint is open, so exposing this on
+      # the LAN would let anyone create accounts and consume the LLM API key.
+      - "127.0.0.1:8000:8000"
     env_file:
       - .env
     volumes:

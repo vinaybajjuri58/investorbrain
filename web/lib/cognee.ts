@@ -66,7 +66,7 @@ async function tryLogin(email: string): Promise<string | null> {
   return body.access_token;
 }
 
-async function registerUser(email: string): Promise<void> {
+async function registerUser(email: string): Promise<"created" | "exists"> {
   const res = await fetch(`${COGNEE_BASE}/api/v1/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -75,9 +75,14 @@ async function registerUser(email: string): Promise<void> {
       password: passwordForUser(email),
     }),
   });
-  if (!res.ok) {
-    throw new Error(`Cognee register → ${res.status}: ${await res.text()}`);
+  if (res.ok) return "created";
+  const detail = await res.text();
+  // A concurrent request may have registered this user first — not an error,
+  // the login retry below succeeds because both derive the same password.
+  if (res.status === 400 && detail.includes("REGISTER_USER_ALREADY_EXISTS")) {
+    return "exists";
   }
+  throw new Error(`Cognee register → ${res.status}: ${detail}`);
 }
 
 async function tokenForUser(email: string): Promise<string> {
@@ -87,10 +92,15 @@ async function tokenForUser(email: string): Promise<string> {
 
   let token = await tryLogin(email);
   if (!token) {
-    await registerUser(email);
+    const reg = await registerUser(email);
     token = await tryLogin(email);
     if (!token) {
-      throw new Error("Cognee login failed immediately after registration");
+      throw new Error(
+        reg === "exists"
+          ? "Cognee account exists but the derived password doesn't match — " +
+            "was COGNEE_USER_SECRET/AUTH_SECRET changed after this user was created?"
+          : "Cognee login failed immediately after registration"
+      );
     }
   }
   tokenCache.set(key, { token, expiresAt: jwtExpiryMs(token) });
