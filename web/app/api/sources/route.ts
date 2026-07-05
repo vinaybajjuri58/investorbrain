@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { datasetForUser } from "@/lib/dataset";
-import { rememberText, listDatasets, listData } from "@/lib/cognee";
+import { rememberText, listDatasets, listData, getRawData } from "@/lib/cognee";
 import { ingestUrl, buildCogneeDocument, SourceDocument } from "@/lib/ingest";
 import { INVESTING_GRAPH_MODEL, EXTRACTION_PROMPT } from "@/lib/extraction";
 
@@ -23,6 +23,27 @@ function slugify(s: string): string {
     .slice(0, 80) || "document";
 }
 
+/**
+ * Parse the metadata header that buildCogneeDocument() prepends to every
+ * ingested file ("Source Title: …", "Source URL: …", "Source Type: …").
+ */
+function parseDocHeader(raw: string): {
+  title?: string;
+  url?: string;
+  sourceType?: string;
+} {
+  const head = raw.slice(0, 600);
+  const get = (label: string) => {
+    const m = new RegExp(`^${label}: (.+)$`, "m").exec(head);
+    return m ? m[1].trim() : undefined;
+  };
+  return {
+    title: get("Source Title"),
+    url: get("Source URL"),
+    sourceType: get("Source Type"),
+  };
+}
+
 /** List the user's already-ingested sources (newest first). */
 export async function GET() {
   const session = await auth();
@@ -40,9 +61,29 @@ export async function GET() {
       return Response.json({ ok: true, items: [] });
     }
     const data = await listData(email, dataset.id);
-    const items = data
-      .map((d) => ({ id: d.id, name: d.name, createdAt: d.createdAt }))
-      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+    // Original title/URL/type live in the document header, not the DataDTO —
+    // fetch each item's raw text (small files, internal network) in parallel.
+    const items = await Promise.all(
+      data.slice(0, 100).map(async (d) => {
+        let meta: ReturnType<typeof parseDocHeader> = {};
+        try {
+          meta = parseDocHeader(await getRawData(email, dataset.id, d.id));
+        } catch {
+          // Header is best-effort; fall back to the stored filename
+        }
+        return {
+          id: d.id,
+          name: d.name,
+          createdAt: d.createdAt,
+          title: meta.title,
+          // note:// pseudo-URLs are internal — never expose them as links
+          url: meta.url?.startsWith("http") ? meta.url : undefined,
+          sourceType: meta.sourceType,
+        };
+      })
+    );
+    items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     return Response.json({ ok: true, items });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

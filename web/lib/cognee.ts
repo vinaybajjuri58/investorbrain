@@ -199,11 +199,11 @@ export interface ForgetOptions {
 
 // ─── Helper ────────────────────────────────────────────────────────────────
 
-async function cogneeRequest<T>(
+async function cogneeFetch(
   path: string,
   init: RequestInit,
   asUser: string
-): Promise<T> {
+): Promise<Response> {
   const url = `${COGNEE_BASE}${path}`;
 
   const doFetch = async (token: string) =>
@@ -231,6 +231,16 @@ async function cogneeRequest<T>(
     }
     throw new Error(`Cognee ${init.method ?? "GET"} ${path} → ${res.status}: ${detail}`);
   }
+
+  return res;
+}
+
+async function cogneeRequest<T>(
+  path: string,
+  init: RequestInit,
+  asUser: string
+): Promise<T> {
+  const res = await cogneeFetch(path, init, asUser);
 
   // Some endpoints return 200 with an empty body
   const text = await res.text();
@@ -374,6 +384,23 @@ export async function listData(
   return cogneeRequest<DataItemDTO[]>(`/api/v1/datasets/${datasetId}/data`, {
     method: "GET",
   }, asUser);
+}
+
+/**
+ * Fetch the raw text content of an ingested data item.
+ * GET /api/v1/datasets/{dataset_id}/data/{data_id}/raw — returns the file body
+ */
+export async function getRawData(
+  asUser: string,
+  datasetId: string,
+  dataId: string
+): Promise<string> {
+  const res = await cogneeFetch(
+    `/api/v1/datasets/${datasetId}/data/${dataId}/raw`,
+    { method: "GET" },
+    asUser
+  );
+  return res.text();
 }
 
 /**

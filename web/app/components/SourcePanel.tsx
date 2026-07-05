@@ -25,7 +25,16 @@ interface SourceItem {
   id: string;
   name: string;
   createdAt: string;
+  title?: string;
+  url?: string;
+  sourceType?: string;
 }
+
+const TYPE_BADGES: Record<string, { label: string; color: string }> = {
+  youtube: { label: "YOUTUBE", color: "#ff4d4d" },
+  article: { label: "BLOG",    color: "#4f9cf9" },
+  note:    { label: "NOTE",    color: "#7d8fa8" },
+};
 
 interface SourceListResponse {
   ok: boolean;
@@ -234,29 +243,53 @@ export default function SourcePanel({ onSourceAdded }: Props) {
             className="space-y-1 max-h-44 overflow-y-auto rounded-xl p-1.5"
             style={{ background: "#0f0f12", border: "1px solid #1a1a1f" }}
           >
-            {sources.map((s) => (
-              <li
-                key={s.id}
-                className="flex items-center gap-2.5 rounded-lg px-2 py-1.5"
-              >
-                <span className="flex-shrink-0">
-                  <ArticleIcon />
-                </span>
+            {sources.map((s) => {
+              const displayName = s.title ?? prettifyName(s.name);
+              const badge = TYPE_BADGES[s.sourceType ?? ""] ?? TYPE_BADGES.note;
+              const nameEl = s.url ? (
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-0 truncate text-[12px] hover:underline"
+                  style={{ color: "rgba(255,255,255,0.85)" }}
+                  title={displayName}
+                >
+                  {displayName}
+                </a>
+              ) : (
                 <span
                   className="flex-1 min-w-0 truncate text-[12px]"
                   style={{ color: "rgba(255,255,255,0.8)" }}
-                  title={prettifyName(s.name)}
+                  title={displayName}
                 >
-                  {prettifyName(s.name)}
+                  {displayName}
                 </span>
-                <span
-                  className="flex-shrink-0 text-[10px] font-mono tabular-nums"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
+              );
+              return (
+                <li
+                  key={s.id}
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5"
                 >
-                  {formatDate(s.createdAt)}
-                </span>
-              </li>
-            ))}
+                  <span className="flex-shrink-0">
+                    {s.sourceType === "youtube" ? <YouTubeIcon /> : <ArticleIcon />}
+                  </span>
+                  {nameEl}
+                  <span
+                    className="flex-shrink-0 text-[9px] font-mono"
+                    style={{ color: badge.color, letterSpacing: "0.08em" }}
+                  >
+                    {badge.label}
+                  </span>
+                  <span
+                    className="flex-shrink-0 text-[10px] font-mono tabular-nums"
+                    style={{ color: "rgba(255,255,255,0.3)" }}
+                  >
+                    {formatDate(s.createdAt)}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
