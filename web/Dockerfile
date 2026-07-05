@@ -112,5 +112,8 @@ USER nextjs
 
 EXPOSE 3000
 
-# `pnpm start` runs the "start" script: `next start`
-CMD ["pnpm", "start"]
+# Invoke next directly: `pnpm start` would trigger pnpm 11's
+# verify-deps-before-run check, which attempts a `pnpm install --production`
+# in the read-only /app and crashes with EACCES (devDeps were pruned, so the
+# check never passes).
+CMD ["node_modules/.bin/next", "start"]

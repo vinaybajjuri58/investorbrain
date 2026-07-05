@@ -1,0 +1,77 @@
+# =============================================================================
+# InvestorBrain — VPS compose for a server with an EXISTING reverse proxy.
+#
+# Unlike docker-compose.prod.yml, this file has NO Caddy: the host already
+# runs an nginx container (desi-quant) that owns ports 80/443. That nginx
+# proxies https://brain.desiquant.com → investorbrain-web:3000 over the
+# shared external "edge" network.
+#
+# One-time host setup:
+#   docker network create edge
+#   docker network connect edge desi-quant-nginx-1
+#
+# Run from the repo root on the VPS:
+#   docker compose -f deploy/docker-compose.vps.yml up -d --build
+# =============================================================================
+
+services:
+
+  cognee:
+    image: cognee/cognee:main
+    env_file:
+      - ../.env
+    volumes:
+      - cognee_data:/app/.cognee_data
+      - cognee_system:/app/.cognee_system
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    environment:
+      - COGNEE_URL=http://cognee:8000
+      - NODE_ENV=production
+      # Public URL — must match the nginx server block and the Google OAuth
+      # redirect URI (https://brain.desiquant.com/api/auth/callback/google).
+      - AUTH_URL=https://brain.desiquant.com
+    env_file:
+      # Root .env supplies AUTH_SECRET, AUTH_GOOGLE_ID/SECRET, OWNER_EMAIL, etc.
+      - ../.env
+    depends_on:
+      cognee:
+        condition: service_healthy
+    networks:
+      internal:
+      edge:
+        # Stable DNS name the desi-quant nginx uses in proxy_pass.
+        aliases:
+          - investorbrain-web
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  internal:
+    driver: bridge
+  # Shared with the desi-quant nginx container; created manually on the host.
+  edge:
+    external: true
+
+volumes:
+  cognee_data:
+    driver: local
+  cognee_system:
+    driver: local
