@@ -38,7 +38,7 @@ type Tab = "ask" | "add" | "memory";
 
 const TAB_LABELS: Record<Tab, string> = {
   ask: "Ask",
-  add: "Add Source",
+  add: "Add",
   memory: "Memory",
 };
 
@@ -311,10 +311,10 @@ export default function Dashboard({ user }: DashboardProps) {
       </header>
 
       {/* ── Main layout ── */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0">
 
-        {/* Graph canvas — left ~65% */}
-        <div className="flex-[65] min-w-0" style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+        {/* Graph canvas — top on mobile, left ~65% on desktop */}
+        <div className="flex-[65] min-h-[55vh] md:min-h-0 min-w-0 border-b border-white/[0.08] md:border-b-0 md:border-r md:border-white/[0.08]">
           <GraphCanvas
             graphData={graphData}
             isProcessing={status === "processing"}
@@ -323,9 +323,9 @@ export default function Dashboard({ user }: DashboardProps) {
           />
         </div>
 
-        {/* Control panel — right ~35% */}
+        {/* Control panel — bottom on mobile, right ~35% on desktop */}
         <div
-          className="flex-[35] min-w-[320px] max-w-[420px] flex flex-col"
+          className="flex-[35] md:max-w-[420px] flex flex-col"
           style={{ background: "#0a0a0d" }}
         >
 

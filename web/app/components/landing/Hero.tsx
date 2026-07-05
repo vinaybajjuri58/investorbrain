@@ -328,7 +328,7 @@ export default function Hero({ isAuthed }: HeroProps) {
       </div>
 
       {/* ── Bottom content row ── */}
-      <div className="relative z-10 mt-auto flex items-end justify-between px-8 pb-12 md:px-14 md:pb-16 pt-36 gap-6">
+      <div className="relative z-10 mt-auto flex flex-col sm:flex-row sm:items-end sm:justify-between px-5 pb-10 sm:px-8 sm:pb-12 md:px-14 md:pb-16 pt-24 sm:pt-36 gap-6">
 
         {/* Bottom-left: heading + CTA */}
         <div
