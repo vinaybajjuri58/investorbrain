@@ -1,9 +1,101 @@
 /**
  * Server-side Cognee client.
  * All field names verified against GET http://localhost:8000/openapi.json.
+ *
+ * Every request runs as a per-app-user Cognee account (auto-provisioned on
+ * first use). Cognee's ENABLE_BACKEND_ACCESS_CONTROL=True enforces isolation
+ * between those accounts — without it, search and graph reads ignore dataset
+ * boundaries and every user sees one shared store.
  */
 
+import { createHmac } from "node:crypto";
+
 const COGNEE_BASE = process.env.COGNEE_URL ?? "http://localhost:8000";
+
+// ─── Per-user authentication ───────────────────────────────────────────────
+
+const COGNEE_USER_SECRET =
+  process.env.COGNEE_USER_SECRET ?? process.env.AUTH_SECRET;
+
+/**
+ * Deterministic per-user password: the user never sees it, and the same
+ * email always yields the same credentials across server restarts.
+ * Changing the secret orphans existing Cognee accounts — their data stays
+ * but logins fail with REGISTER_USER_ALREADY_EXISTS on re-registration.
+ */
+function passwordForUser(email: string): string {
+  if (!COGNEE_USER_SECRET) {
+    throw new Error(
+      "Set COGNEE_USER_SECRET (or AUTH_SECRET) to derive Cognee credentials"
+    );
+  }
+  return createHmac("sha256", COGNEE_USER_SECRET)
+    .update(email.toLowerCase())
+    .digest("hex");
+}
+
+const tokenCache = new Map<string, { token: string; expiresAt: number }>();
+
+function jwtExpiryMs(token: string): number {
+  try {
+    const payload = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64url").toString("utf-8")
+    ) as { exp?: number };
+    if (typeof payload.exp === "number") return payload.exp * 1000;
+  } catch {
+    // opaque token — fall through to a conservative TTL
+  }
+  return Date.now() + 30 * 60 * 1000;
+}
+
+/** Returns an access token, or null when the user doesn't exist yet. */
+async function tryLogin(email: string): Promise<string | null> {
+  const res = await fetch(`${COGNEE_BASE}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      username: email.toLowerCase(),
+      password: passwordForUser(email),
+    }),
+  });
+  if (res.status === 400) return null;
+  if (!res.ok) {
+    throw new Error(`Cognee login → ${res.status}: ${await res.text()}`);
+  }
+  const body = (await res.json()) as { access_token: string };
+  return body.access_token;
+}
+
+async function registerUser(email: string): Promise<void> {
+  const res = await fetch(`${COGNEE_BASE}/api/v1/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: email.toLowerCase(),
+      password: passwordForUser(email),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Cognee register → ${res.status}: ${await res.text()}`);
+  }
+}
+
+async function tokenForUser(email: string): Promise<string> {
+  const key = email.toLowerCase();
+  const cached = tokenCache.get(key);
+  if (cached && cached.expiresAt - 60_000 > Date.now()) return cached.token;
+
+  let token = await tryLogin(email);
+  if (!token) {
+    await registerUser(email);
+    token = await tryLogin(email);
+    if (!token) {
+      throw new Error("Cognee login failed immediately after registration");
+    }
+  }
+  tokenCache.set(key, { token, expiresAt: jwtExpiryMs(token) });
+  return token;
+}
 
 // ─── Response types (from openapi.json schemas) ────────────────────────────
 
@@ -99,13 +191,25 @@ export interface ForgetOptions {
 
 async function cogneeRequest<T>(
   path: string,
-  init: RequestInit
+  init: RequestInit,
+  asUser: string
 ): Promise<T> {
   const url = `${COGNEE_BASE}${path}`;
-  const res = await fetch(url, {
-    ...init,
-    // Auth is disabled; no headers needed.
-  });
+
+  const doFetch = async (token: string) =>
+    fetch(url, {
+      ...init,
+      headers: { ...init.headers, Authorization: `Bearer ${token}` },
+    });
+
+  let res = await doFetch(await tokenForUser(asUser));
+
+  // A cached token can outlive server-side invalidation (e.g. Cognee restart
+  // with a new JWT secret) — re-login once and retry.
+  if (res.status === 401) {
+    tokenCache.delete(asUser.toLowerCase());
+    res = await doFetch(await tokenForUser(asUser));
+  }
 
   if (!res.ok) {
     let detail = "";
@@ -139,6 +243,7 @@ async function cogneeRequest<T>(
  *                      Use to steer which node/edge types are extracted.
  */
 export async function rememberText(
+  asUser: string,
   text: string,
   filename: string,
   datasetName: string,
@@ -174,7 +279,7 @@ export async function rememberText(
   return cogneeRequest<Record<string, unknown>>("/api/v1/remember", {
     method: "POST",
     body: form,
-  });
+  }, asUser);
 }
 
 /**
@@ -182,6 +287,7 @@ export async function rememberText(
  * POST /api/v1/recall — body: { query, searchType, datasets, topK }
  */
 export async function recall(
+  asUser: string,
   query: string,
   opts: RecallOptions = {}
 ): Promise<RecallResult[]> {
@@ -195,7 +301,7 @@ export async function recall(
       topK: opts.topK ?? 15,
       systemPrompt: opts.systemPrompt ?? null,
     }),
-  });
+  }, asUser);
 }
 
 /**
@@ -203,6 +309,7 @@ export async function recall(
  * POST /api/v1/improve — body: { datasetName, runInBackground }
  */
 export async function improve(
+  asUser: string,
   datasetName: string
 ): Promise<Record<string, unknown>> {
   return cogneeRequest<Record<string, unknown>>("/api/v1/improve", {
@@ -212,7 +319,7 @@ export async function improve(
       datasetName,
       runInBackground: true,
     }),
-  });
+  }, asUser);
 }
 
 /**
@@ -220,55 +327,56 @@ export async function improve(
  * POST /api/v1/forget — body: { dataId?, dataset?, everything?, memoryOnly? }
  */
 export async function forget(
+  asUser: string,
   opts: ForgetOptions = {}
 ): Promise<void> {
   await cogneeRequest<unknown>("/api/v1/forget", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(opts),
-  });
+  }, asUser);
 }
 
 /**
  * List all datasets.
  * GET /api/v1/datasets — returns DatasetDTO[]
  */
-export async function listDatasets(): Promise<DatasetDTO[]> {
+export async function listDatasets(asUser: string): Promise<DatasetDTO[]> {
   return cogneeRequest<DatasetDTO[]>("/api/v1/datasets", {
     method: "GET",
-  });
+  }, asUser);
 }
 
 /**
  * Fetch the knowledge graph for a dataset.
  * GET /api/v1/datasets/{dataset_id}/graph — returns { nodes, edges }
  */
-export async function getGraph(datasetId: string): Promise<GraphDTO> {
+export async function getGraph(asUser: string, datasetId: string): Promise<GraphDTO> {
   return cogneeRequest<GraphDTO>(`/api/v1/datasets/${datasetId}/graph`, {
     method: "GET",
-  });
+  }, asUser);
 }
 
 /**
  * Get processing status for all datasets.
  * GET /api/v1/datasets/status
  */
-export async function getStatus(): Promise<
+export async function getStatus(asUser: string): Promise<
   Record<string, PipelineRunStatus | Record<string, PipelineRunStatus>>
 > {
   return cogneeRequest<
     Record<string, PipelineRunStatus | Record<string, PipelineRunStatus>>
-  >("/api/v1/datasets/status", { method: "GET" });
+  >("/api/v1/datasets/status", { method: "GET" }, asUser);
 }
 
 /**
  * List uploaded ontologies.
  * GET /api/v1/ontologies
  */
-export async function listOntologies(): Promise<Record<string, unknown>> {
+export async function listOntologies(asUser: string): Promise<Record<string, unknown>> {
   return cogneeRequest<Record<string, unknown>>("/api/v1/ontologies", {
     method: "GET",
-  });
+  }, asUser);
 }
 
 /**
@@ -276,6 +384,7 @@ export async function listOntologies(): Promise<Record<string, unknown>> {
  * POST /api/v1/ontologies — multipart: ontology_key (string), ontology_file (.owl), description?
  */
 export async function uploadOntology(
+  asUser: string,
   ontologyKey: string,
   owlContent: string,
   description?: string
@@ -291,5 +400,5 @@ export async function uploadOntology(
   return cogneeRequest<Record<string, unknown>>("/api/v1/ontologies", {
     method: "POST",
     body: form,
-  });
+  }, asUser);
 }

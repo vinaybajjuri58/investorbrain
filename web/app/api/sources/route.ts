@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     // Pass the domain-typed graph model and extraction prompt.
     // No ontology_key — the custom graph_model + prompt fully control extraction.
     await rememberText(
+      email,
       content,
       filename,
       dataset,

@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
 
   try {
     if (dataId) {
-      await forget({ dataId, dataset });
+      await forget(email, { dataId, dataset });
     } else {
       // No memoryOnly: deleting the dataset removes the raw files too,
       // otherwise the next cognify resurrects the old graph from them.
-      await forget({ dataset });
+      await forget(email, { dataset });
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

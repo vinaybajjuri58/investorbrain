@@ -26,7 +26,8 @@ export async function POST(_request: NextRequest) {
 
   // Require authentication — ontology setup is an admin operation
   const session = await auth();
-  if (!session?.user?.email) {
+  const email = session?.user?.email;
+  if (!email) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -42,7 +43,7 @@ export async function POST(_request: NextRequest) {
   // Check if "investing" ontology already exists
   let existing: Record<string, unknown>;
   try {
-    existing = await listOntologies();
+    existing = await listOntologies(email);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json(
@@ -60,6 +61,7 @@ export async function POST(_request: NextRequest) {
 
   try {
     await uploadOntology(
+      email,
       "investing",
       owl.content,
       "InvestorBrain investing domain ontology"

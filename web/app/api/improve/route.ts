@@ -18,7 +18,7 @@ export async function POST(_request: NextRequest) {
 
   let result: Record<string, unknown>;
   try {
-    result = await improve(dataset);
+    result = await improve(email, dataset);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: `Improve failed: ${msg}` }, { status: 502 });

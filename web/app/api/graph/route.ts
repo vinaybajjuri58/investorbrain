@@ -62,7 +62,7 @@ export async function GET() {
 
   let datasets: Awaited<ReturnType<typeof listDatasets>>;
   try {
-    datasets = await listDatasets();
+    datasets = await listDatasets(email);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: `Could not list datasets: ${msg}` }, { status: 502 });
@@ -76,7 +76,7 @@ export async function GET() {
 
   let graph: Awaited<ReturnType<typeof getGraph>>;
   try {
-    graph = await getGraph(dataset.id);
+    graph = await getGraph(email, dataset.id);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return Response.json({ error: `Could not fetch graph: ${msg}` }, { status: 502 });

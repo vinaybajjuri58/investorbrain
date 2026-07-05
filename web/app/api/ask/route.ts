@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
   let results: RecallResult[];
   try {
-    results = await recall(question.trim(), {
+    results = await recall(email, question.trim(), {
       datasets: [dataset],
       searchType: searchType ?? "GRAPH_COMPLETION",
       systemPrompt: GROUNDED_PROMPT,
