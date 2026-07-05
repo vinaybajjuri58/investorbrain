@@ -59,6 +59,18 @@ export default function Dashboard({ user }: DashboardProps) {
   const [refreshTick, setRefreshTick] = useState(0);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Until this timestamp, status polls that report non-processing are ignored:
+  // right after a source is added, Cognee's background run hasn't registered
+  // yet, so the poll would report the PREVIOUS run's state and hide the loader.
+  const optimisticProcessingUntilRef = useRef(0);
+
+  const showToast = useCallback((message: string, ms = 8000) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(message);
+    toastTimerRef.current = setTimeout(() => setToast(null), ms);
+  }, []);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -112,7 +124,16 @@ export default function Dashboard({ user }: DashboardProps) {
     async function pollStatus() {
       try {
         const data = await fetchJson<unknown>("/api/status");
-        if (!cancelled) setStatus(parseStatus(data));
+        if (!cancelled) {
+          const parsed = parseStatus(data);
+          if (
+            parsed !== "processing" &&
+            Date.now() < optimisticProcessingUntilRef.current
+          ) {
+            return; // hold the optimistic "processing" state
+          }
+          setStatus(parsed);
+        }
       } catch {
         // ignore
       }
@@ -137,17 +158,21 @@ export default function Dashboard({ user }: DashboardProps) {
   useEffect(() => {
     if (prevStatusRef.current === "processing" && status !== "processing") {
       fetchGraph();
+      showToast("Memory graph updated", 4000);
     }
     prevStatusRef.current = status;
-  }, [status, fetchGraph]);
+  }, [status, fetchGraph, showToast]);
 
   const handleRefresh = useCallback(() => setRefreshTick((t) => t + 1), []);
 
   const handleSourceAdded = useCallback(() => {
+    optimisticProcessingUntilRef.current = Date.now() + 20000;
     setStatus("processing");
-  }, []);
+    showToast("Building your memory graph — new nodes appear automatically in ~10–15 s");
+  }, [showToast]);
 
   const handleForgetAll = useCallback(() => {
+    optimisticProcessingUntilRef.current = 0;
     setGraphData({ nodes: [], links: [] });
     setStatus("idle");
   }, []);
@@ -371,6 +396,37 @@ export default function Dashboard({ user }: DashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* ── Toast ── */}
+      {toast && (
+        <div
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 rounded-xl px-4 py-2.5"
+          style={{
+            background: "rgba(15,15,18,0.95)",
+            border: "1px solid rgba(29,59,224,0.4)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.5), 0 0 12px rgba(29,59,224,0.15)",
+            backdropFilter: "blur(8px)",
+          }}
+          role="status"
+        >
+          <div className="relative w-2 h-2 flex-shrink-0">
+            <div className="w-2 h-2 rounded-full" style={{ background: "#1d3be0" }} />
+            <div
+              className="absolute inset-0 rounded-full status-ring"
+              style={{ background: "#1d3be0" }}
+            />
+          </div>
+          <span
+            className="text-[12px]"
+            style={{
+              fontFamily: "var(--font-geist-sans)",
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
+            {toast}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
