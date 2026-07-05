@@ -357,6 +357,25 @@ export async function listDatasets(asUser: string): Promise<DatasetDTO[]> {
   }, asUser);
 }
 
+export interface DataItemDTO {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+/**
+ * List ingested data items in a dataset.
+ * GET /api/v1/datasets/{dataset_id}/data — returns DataDTO[]
+ */
+export async function listData(
+  asUser: string,
+  datasetId: string
+): Promise<DataItemDTO[]> {
+  return cogneeRequest<DataItemDTO[]>(`/api/v1/datasets/${datasetId}/data`, {
+    method: "GET",
+  }, asUser);
+}
+
 /**
  * Fetch the knowledge graph for a dataset.
  * GET /api/v1/datasets/{dataset_id}/graph — returns { nodes, edges }

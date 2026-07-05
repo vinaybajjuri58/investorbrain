@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { fetchJson } from "@/app/hooks/useApi";
 import SpinnerIcon from "@/app/components/Spinner";
 
@@ -19,6 +19,29 @@ interface SourceResponse {
 
 interface SetupResponse {
   ok: boolean;
+}
+
+interface SourceItem {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+interface SourceListResponse {
+  ok: boolean;
+  items?: SourceItem[];
+}
+
+// Filenames are slugs ("why-i-sold-my-flat") — turn back into readable text
+function prettifyName(name: string): string {
+  const s = name.replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").trim();
+  return s ? s[0].toUpperCase() + s.slice(1) : name;
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 interface Props {
@@ -73,7 +96,38 @@ export default function SourcePanel({ onSourceAdded }: Props) {
   const [noteLoading, setNoteLoading] = useState(false);
   const [noteResult, setNoteResult] = useState<{ ok: boolean; message: string } | null>(null);
 
+  const [sources, setSources] = useState<SourceItem[]>([]);
+  const [sourcesLoaded, setSourcesLoaded] = useState(false);
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const setupCalledRef = useRef(false);
+
+  const loadSources = useCallback(async () => {
+    try {
+      const data = await fetchJson<SourceListResponse>("/api/sources");
+      if (data.ok && data.items) setSources(data.items);
+    } catch {
+      // best-effort list; the add form still works without it
+    } finally {
+      setSourcesLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadSources();
+    return () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    };
+  }, [loadSources]);
+
+  // Cognee registers the data record shortly after /remember returns, so
+  // refresh once immediately and once again after the pipeline catches up.
+  const refreshSourcesAfterAdd = useCallback(() => {
+    loadSources();
+    if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    refetchTimerRef.current = setTimeout(loadSources, 8000);
+  }, [loadSources]);
 
   const callSetup = useCallback(async () => {
     if (setupCalledRef.current) return;
@@ -100,6 +154,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
         setUrlResult({ ok: true, message: `Remembered: "${what}"${who}` });
         setUrl("");
         onSourceAdded();
+        refreshSourcesAfterAdd();
       } else {
         setUrlResult({ ok: false, message: data.error ?? "Something went wrong." });
       }
@@ -108,7 +163,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
     } finally {
       setUrlLoading(false);
     }
-  }, [url, callSetup, onSourceAdded]);
+  }, [url, callSetup, onSourceAdded, refreshSourcesAfterAdd]);
 
   const handleAddNote = useCallback(async () => {
     const content = noteContent.trim();
@@ -129,6 +184,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
         setNoteContent("");
         setNoteTitle("");
         onSourceAdded();
+        refreshSourcesAfterAdd();
       } else {
         setNoteResult({ ok: false, message: data.error ?? "Something went wrong." });
       }
@@ -137,7 +193,7 @@ export default function SourcePanel({ onSourceAdded }: Props) {
     } finally {
       setNoteLoading(false);
     }
-  }, [noteTitle, noteContent, callSetup, onSourceAdded]);
+  }, [noteTitle, noteContent, callSetup, onSourceAdded, refreshSourcesAfterAdd]);
 
   const yt = url.trim() ? isYouTube(url.trim()) : null;
 
@@ -158,6 +214,52 @@ export default function SourcePanel({ onSourceAdded }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto p-4 space-y-5" style={{ background: "#0a0a0d" }}>
+
+      {/* ── Existing sources ── */}
+      {sourcesLoaded && sources.length > 0 && (
+        <section className="space-y-3">
+          <span
+            className="uppercase"
+            style={{
+              fontFamily: "var(--font-geist-mono)",
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              color: "rgba(255,255,255,0.4)",
+            }}
+          >
+            → YOUR SOURCES ({sources.length})
+          </span>
+
+          <ul
+            className="space-y-1 max-h-44 overflow-y-auto rounded-xl p-1.5"
+            style={{ background: "#0f0f12", border: "1px solid #1a1a1f" }}
+          >
+            {sources.map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center gap-2.5 rounded-lg px-2 py-1.5"
+              >
+                <span className="flex-shrink-0">
+                  <ArticleIcon />
+                </span>
+                <span
+                  className="flex-1 min-w-0 truncate text-[12px]"
+                  style={{ color: "rgba(255,255,255,0.8)" }}
+                  title={prettifyName(s.name)}
+                >
+                  {prettifyName(s.name)}
+                </span>
+                <span
+                  className="flex-shrink-0 text-[10px] font-mono tabular-nums"
+                  style={{ color: "rgba(255,255,255,0.3)" }}
+                >
+                  {formatDate(s.createdAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* ── URL section ── */}
       <section className="space-y-3">

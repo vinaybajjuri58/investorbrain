@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { datasetForUser } from "@/lib/dataset";
-import { rememberText } from "@/lib/cognee";
+import { rememberText, listDatasets, listData } from "@/lib/cognee";
 import { ingestUrl, buildCogneeDocument, SourceDocument } from "@/lib/ingest";
 import { INVESTING_GRAPH_MODEL, EXTRACTION_PROMPT } from "@/lib/extraction";
 
@@ -21,6 +21,33 @@ function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "document";
+}
+
+/** List the user's already-ingested sources (newest first). */
+export async function GET() {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const datasetName = datasetForUser(email);
+  try {
+    const datasets = await listDatasets(email);
+    const dataset = datasets.find((d) => d.name === datasetName);
+    if (!dataset) {
+      // New user with no dataset yet
+      return Response.json({ ok: true, items: [] });
+    }
+    const data = await listData(email, dataset.id);
+    const items = data
+      .map((d) => ({ id: d.id, name: d.name, createdAt: d.createdAt }))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    return Response.json({ ok: true, items });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return Response.json({ error: `Could not list sources: ${msg}` }, { status: 502 });
+  }
 }
 
 export async function POST(request: NextRequest) {
