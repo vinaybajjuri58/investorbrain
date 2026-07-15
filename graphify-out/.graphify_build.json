@@ -1,0 +1,1 @@
+{"excludes": ["node_modules", ".next", "out", "build", "dist", "generated", "deploy", "public", "media"]}
