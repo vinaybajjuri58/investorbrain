@@ -63,6 +63,11 @@ services:
     init: true
     expose:
       - "3000"
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - investorbrain-web-coolify
     environment:
       COGNEE_URL: http://cognee:8000
       NODE_ENV: production
@@ -103,3 +108,10 @@ services:
 volumes:
   cognee_data:
   cognee_system:
+
+# Migration bridge: the existing nginx container routes the production hostname
+# to this stable alias. Remove this network after nginx is retired for Coolify's
+# own proxy.
+networks:
+  edge:
+    external: true
