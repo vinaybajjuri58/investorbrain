@@ -22,6 +22,7 @@ services:
   # ---------------------------------------------------------------------------
   cognee:
     image: cognee/cognee:main
+    init: true
     env_file:
       # Repo-root .env — same shape as .env.example.
       # Contains LLM_API_KEY, EMBEDDING_*, DB_*, GRAPH_*, VECTOR_*, etc.
@@ -34,6 +35,19 @@ services:
     networks:
       - internal
     restart: unless-stopped
+    stop_grace_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "${COGNEE_CPU_LIMIT:-1.25}"
+          memory: "${COGNEE_MEMORY_LIMIT:-3G}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -55,6 +69,8 @@ services:
       # (docker-compose environment: takes precedence over env_file:)
       - COGNEE_URL=http://cognee:8000
       - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - NODE_OPTIONS=--max-old-space-size=512
       # Auth.js — pass through from the root .env (which holds real secrets).
       # Generate AUTH_SECRET with: openssl rand -base64 32
       # AUTH_URL must match the public HTTPS domain so OAuth redirects work.
@@ -64,16 +80,28 @@ services:
       - AUTH_URL=https://${DOMAIN}
       # Email that maps to the existing "investing" dataset
       - OWNER_EMAIL=${OWNER_EMAIL}
-    env_file:
-      # Pulls in any additional vars without duplicating them.
-      # Variables set in environment: above take precedence over env_file:.
-      - ../.env
+      - COGNEE_USER_SECRET=${COGNEE_USER_SECRET:-${AUTH_SECRET}}
+      - SUPADATA_API_KEY=${SUPADATA_API_KEY:-}
     depends_on:
       cognee:
         condition: service_healthy
     networks:
       - internal
     restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "${WEB_CPU_LIMIT:-0.50}"
+          memory: "${WEB_MEMORY_LIMIT:-768M}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       # wget is available on Alpine; checks that Next.js is responding
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ > /dev/null || exit 1"]

@@ -1,0 +1,103 @@
+# InvestorBrain — Coolify deployment (Coolify owns public routing and TLS).
+#
+# Configure the public domain for the `web` service on container port 3000 in
+# Coolify. Do not add a public domain to `cognee`; its API must remain private.
+# Before first cutover, restore both Cognee volumes into the new Coolify-managed
+# volumes. See COOLIFY.md for the migration checklist.
+
+services:
+  cognee:
+    image: ${COGNEE_IMAGE:-cognee/cognee:main}
+    init: true
+    environment:
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-4o-mini}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-${LLM_API_KEY}}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-openai/text-embedding-3-large}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-3072}
+      DB_PROVIDER: ${DB_PROVIDER:-sqlite}
+      DB_NAME: ${DB_NAME:-cognee_db}
+      GRAPH_DATABASE_PROVIDER: ${GRAPH_DATABASE_PROVIDER:-kuzu}
+      GRAPH_DATASET_DATABASE_HANDLER: ${GRAPH_DATASET_DATABASE_HANDLER:-kuzu}
+      VECTOR_DB_PROVIDER: ${VECTOR_DB_PROVIDER:-lancedb}
+      VECTOR_DATASET_DATABASE_HANDLER: ${VECTOR_DATASET_DATABASE_HANDLER:-lancedb}
+      DATA_ROOT_DIRECTORY: /app/.cognee_data
+      SYSTEM_ROOT_DIRECTORY: /app/.cognee_system
+      FASTAPI_USERS_JWT_SECRET: ${FASTAPI_USERS_JWT_SECRET}
+      REQUIRE_AUTHENTICATION: ${REQUIRE_AUTHENTICATION:-False}
+      ENABLE_BACKEND_ACCESS_CONTROL: ${ENABLE_BACKEND_ACCESS_CONTROL:-True}
+      ENV: ${ENV:-production}
+      LITELLM_LOG: ${LITELLM_LOG:-ERROR}
+      TOKENIZERS_PARALLELISM: "false"
+    volumes:
+      - cognee_data:/app/.cognee_data
+      - cognee_system:/app/.cognee_system
+    restart: unless-stopped
+    stop_grace_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "${COGNEE_CPU_LIMIT:-1.25}"
+          memory: "${COGNEE_MEMORY_LIMIT:-3G}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    init: true
+    expose:
+      - "3000"
+    environment:
+      COGNEE_URL: http://cognee:8000
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: --max-old-space-size=512
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
+      AUTH_URL: ${AUTH_URL}
+      OWNER_EMAIL: ${OWNER_EMAIL}
+      COGNEE_USER_SECRET: ${COGNEE_USER_SECRET:-${AUTH_SECRET}}
+      SUPADATA_API_KEY: ${SUPADATA_API_KEY:-}
+    depends_on:
+      cognee:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "${WEB_CPU_LIMIT:-0.50}"
+          memory: "${WEB_MEMORY_LIMIT:-768M}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  cognee_data:
+  cognee_system:

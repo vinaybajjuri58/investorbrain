@@ -9,7 +9,7 @@
 #     supported through April 2027. Override with --build-arg NODE_VERSION=24
 #     if you want Active LTS.
 #
-# NO output:standalone is assumed — next.config.ts is left untouched.
+# Next.js standalone output keeps the runtime image small enough for the VPS.
 # COGNEE_URL is injected at runtime via docker-compose environment.
 # =============================================================================
 
@@ -55,29 +55,14 @@ COPY . .
 RUN pnpm build
 
 # ---------------------------------------------------------------------------
-# Stage 4 · prod-deps — prune to production-only modules
-# ---------------------------------------------------------------------------
-FROM base AS prod-deps
-
-WORKDIR /app
-
-COPY pnpm-workspace.yaml ./
-COPY package.json pnpm-lock.yaml ./
-
-# Install all deps first, then prune devDependencies.
-# pnpm prune --prod removes packages listed under devDependencies.
-# The virtual store (.pnpm/) is preserved so symlinks in node_modules work
-# correctly when copied into the runner stage.
-RUN pnpm install --frozen-lockfile && pnpm prune --prod
-
-# ---------------------------------------------------------------------------
-# Stage 5 · runner — lean production image
+# Stage 4 · runner — lean production image
 # ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 # Default points to the internal Compose service name.
@@ -88,32 +73,16 @@ ENV COGNEE_URL=http://cognee:8000
 RUN addgroup --system --gid 1001 nodejs \
  && adduser  --system --uid 1001 --ingroup nodejs nextjs
 
-# Re-enable corepack so `pnpm start` resolves correctly in this stage
-RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
-
-# Production node_modules (pnpm symlinks are preserved by Docker COPY;
-# the .pnpm/ virtual store is included so all symlink targets are present)
-COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
-
-# Built .next output
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+# Standalone output includes the traced production server and only the runtime
+# dependencies it actually needs. Keep the copy order cache-friendly.
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
 # Static assets served directly by Next.js
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-
-# Config files required by `next start` at runtime
-COPY --from=builder --chown=nextjs:nodejs /app/package.json  ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts ./next.config.ts
-# tsconfig.json is needed for @/* path alias resolution that next may
-# reference when reading next.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
 
-# Invoke next directly: `pnpm start` would trigger pnpm 11's
-# verify-deps-before-run check, which attempts a `pnpm install --production`
-# in the read-only /app and crashes with EACCES (devDeps were pruned, so the
-# check never passes).
-CMD ["node_modules/.bin/next", "start"]
+CMD ["node", "server.js"]
