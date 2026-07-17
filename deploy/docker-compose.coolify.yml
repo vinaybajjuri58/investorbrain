@@ -57,7 +57,8 @@ services:
 
   web:
     build:
-      context: ../web
+      # Coolify runs Compose with the repository root as project-directory.
+      context: ./web
       dockerfile: Dockerfile
     init: true
     expose:
